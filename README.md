@@ -1,8 +1,6 @@
 # Agent UI
 
-A modern chat interface for AI agents built with Next.js, Tailwind CSS, and TypeScript. This template provides a ready-to-use UI for interacting with Agno agents.
-
-<img src="https://github.com/user-attachments/assets/7765fae5-a813-46cb-993b-904af9bc1672" alt="agent-ui" style="border-radius: 10px; width: 100%; max-width: 800px;" />
+A modern interface for financial agents built with Next.js, Tailwind CSS, and TypeScript. 
 
 ## Features
 
@@ -22,45 +20,28 @@ Before setting up Agent UI, you may want to have an Agno Playground running. If 
 
 ### Installation
 
-### Automatic Installation (Recommended)
-
-```bash
-npx create-agent-ui@latest
-```
-
-### Manual Installation
-
-1. Clone the repository:
-
-```bash
-git clone https://github.com/agno-agi/agent-ui.git
-cd agent-ui
-```
-
-2. Install dependencies:
+1. Install dependencies:
 
 ```bash
 pnpm install
 ```
 
-3. Start the development server:
+2. Start the development server:
 
 ```bash
 pnpm dev
 ```
 
-4. Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+3. Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
 ## Connecting to an Agent Backend
 
 By default Agent UI connects to `http://localhost:7777`. You can easily change this by hovering over the endpoint URL and clicking the edit option.
 
-The default endpoint works with the standard Agno Playground setup described in the [official documentation](https://agno.link/agent-ui#connect-to-local-agents).
+## Key Pages
 
-## Contributing
+### Projects
+Display all projects and create new projects.
 
-Contributions are welcome! Please see [CONTRIBUTING.md](./CONTRIBUTING.md) for contribution guidelines.
-
-## License
-
-This project is licensed under the [MIT License](./LICENSE).
+### Single Project
+Display the details of a single project, e.g. scope of service, team, work.
