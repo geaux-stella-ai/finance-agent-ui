@@ -1,22 +1,17 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { useState, useEffect } from 'react';
 import Icon from '@/components/ui/icon';
-import { Associate, generateSampleAssociate } from '@/types/associate';
+import { Associate, getAllAssociates } from '@/types/associate';
 
-const ProjectSidebar = () => {
-    const router = useRouter();
+const Team = () => {
     const [isCollapsed, setIsCollapsed] = useState(false);
     const [associates, setAssociates] = useState<Associate[]>([]);
 
     useEffect(() => {
         // Generate sample associates
-        const sampleAssociates = Array.from({ length: 3 }, (_, i) =>
-            generateSampleAssociate((i + 1).toString())
-        );
-        setAssociates(sampleAssociates);
+        setAssociates(getAllAssociates());
     }, []);
 
     return (
@@ -50,14 +45,13 @@ const ProjectSidebar = () => {
                 }}
             >
                 <div className="space-y-2">
-                    <div className="text-xs font-medium uppercase text-primary">Team</div>
+                    <div className="text-xs font-medium uppercase text-primary">Junior Associates</div>
                     <div className="space-y-2">
                         {associates.map((associate) => (
                             <div
                                 key={associate.id}
                                 className="flex flex-col gap-1 rounded-lg border border-primary/15 bg-accent p-3"
                             >
-                                <div className="text-sm font-medium">{associate.name}</div>
                                 <div className="text-xs text-muted-foreground">
                                     {associate.specialization}
                                 </div>
@@ -70,4 +64,4 @@ const ProjectSidebar = () => {
     );
 };
 
-export default ProjectSidebar; 
+export default Team; 
