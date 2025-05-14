@@ -8,6 +8,7 @@ import { Project, generateSampleProject } from '@/types/project';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { TextArea } from '@/components/ui/textarea';
+import { useRouter } from 'next/navigation';
 
 // Generate sample projects
 const sampleProjects: Project[] = [
@@ -17,6 +18,7 @@ const sampleProjects: Project[] = [
 ];
 
 export default function ProjectsPage() {
+    const router = useRouter();
     const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
     const [projects, setProjects] = useState<Project[]>(sampleProjects);
     const [newProject, setNewProject] = useState<Partial<Project>>({
@@ -135,7 +137,8 @@ export default function ProjectsPage() {
                     {projects.map((project) => (
                         <div
                             key={project.id}
-                            className="p-6 rounded-lg border bg-card hover:shadow-lg transition-shadow"
+                            className="p-6 rounded-lg border bg-card hover:shadow-lg transition-shadow cursor-pointer"
+                            onClick={() => router.push(`/projects/${project.id}`)}
                         >
                             <h2 className="text-xl font-semibold mb-2">{project.name}</h2>
                             <p className="text-muted-foreground mb-4">{project.description}</p>
