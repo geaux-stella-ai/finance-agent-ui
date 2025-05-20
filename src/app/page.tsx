@@ -47,7 +47,11 @@ export default function SalesPage() {
             </div>
             <h3 className="text-xl font-semibold mb-2">Advanced Tool Integration</h3>
             <p className="text-muted-foreground">
-              Seamlessly research on comparable companies, access the meeting notes, and generate comprehensive reports without context switching.
+              S&P Capital IQ, Bloomberg, Kroll Cost of Capital Navigator ... all essential datasets are easily accessible.
+              <br />
+              Internal search bot to quickly find the latest company information, news, etc and summarize for you.
+              <br />
+              Say goodbye to switching between 30 browser tabs.
             </p>
           </div>
 
