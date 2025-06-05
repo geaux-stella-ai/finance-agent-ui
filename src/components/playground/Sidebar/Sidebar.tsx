@@ -39,6 +39,17 @@ const NewChatButton = ({
   </Button>
 )
 
+const DocumentsButton = ({ disabled, onClick }: { disabled: boolean, onClick?: () => void }) => (
+  <Button
+    onClick={onClick}
+    disabled={disabled}
+    size="lg"
+    className="h-9 w-full rounded-xl bg-primary text-xs font-medium text-background hover:bg-primary/80"
+  >
+    <span className="uppercase">Documents</span>
+  </Button>
+)
+
 const ModelDisplay = ({ model }: { model: string }) => (
   <div className="flex h-9 w-full items-center gap-3 rounded-xl border border-primary/15 bg-accent p-3 text-xs font-medium uppercase text-muted">
     {(() => {
@@ -168,7 +179,7 @@ const Endpoint = () => {
                   <p className="text-xs font-medium text-muted">
                     {isMounted
                       ? truncateText(selectedEndpoint, 21) ||
-                        ENDPOINT_PLACEHOLDER
+                      ENDPOINT_PLACEHOLDER
                       : 'http://localhost:7777'}
                   </p>
                   <div
@@ -253,6 +264,7 @@ const Sidebar = () => {
           disabled={messages.length === 0}
           onClick={handleNewChat}
         />
+        <DocumentsButton disabled={false} />
         {isMounted && (
           <>
             <Endpoint />
@@ -265,7 +277,7 @@ const Sidebar = () => {
                   transition={{ duration: 0.5, ease: 'easeInOut' }}
                 >
                   <div className="text-xs font-medium uppercase text-primary">
-                    Agent
+                    Junior Associate
                   </div>
                   {isEndpointLoading ? (
                     <div className="flex w-full flex-col gap-2">
