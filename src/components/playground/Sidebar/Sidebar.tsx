@@ -13,6 +13,7 @@ import { toast } from 'sonner'
 import { useQueryState } from 'nuqs'
 import { truncateText } from '@/lib/utils'
 import { Skeleton } from '@/components/ui/skeleton'
+import { useRouter, useParams } from 'next/navigation'
 const ENDPOINT_PLACEHOLDER = 'NO ENDPOINT ADDED'
 const SidebarHeader = () => (
   <div className="flex items-center gap-2">
@@ -39,16 +40,31 @@ const NewChatButton = ({
   </Button>
 )
 
-const DocumentsButton = ({ disabled, onClick }: { disabled: boolean, onClick?: () => void }) => (
-  <Button
-    onClick={onClick}
-    disabled={disabled}
-    size="lg"
-    className="h-9 w-full rounded-xl bg-primary text-xs font-medium text-background hover:bg-primary/80"
-  >
-    <span className="uppercase">Documents</span>
-  </Button>
-)
+const DocumentsButton = ({ disabled }: { disabled: boolean }) => {
+  const router = useRouter();
+  const params = useParams();
+  const projectId = params.id as string;
+
+  const handleClick = () => {
+    if (projectId) {
+      router.push(`/projects/${projectId}/documents`)
+    } else {
+      toast.error('No project selected')
+    }
+  }
+
+  return (
+    <Button
+      onClick={handleClick}
+      disabled={disabled}
+      size="lg"
+      className="h-9 w-full rounded-xl bg-primary text-xs font-medium text-background hover:bg-primary/80"
+    >
+      <Icon type="sheet" size="xs" className="text-background" />
+      <span className="uppercase">Documents</span>
+    </Button>
+  );
+};
 
 const ModelDisplay = ({ model }: { model: string }) => (
   <div className="flex h-9 w-full items-center gap-3 rounded-xl border border-primary/15 bg-accent p-3 text-xs font-medium uppercase text-muted">
