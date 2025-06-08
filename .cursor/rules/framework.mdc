@@ -4,3 +4,6 @@ globs:
 alwaysApply: true
 ---
 This project is built with Next.js, Tailwind CSS, and TypeScript
+
+`pnpm` is used.
+

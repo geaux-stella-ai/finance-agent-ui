@@ -40,7 +40,7 @@ export interface Project {
     description: string;
     createdAt: string;
     updatedAt: string;
-    client?: {
+    client: {
         name: string;
         industry: string;
     };
