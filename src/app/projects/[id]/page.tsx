@@ -20,8 +20,10 @@ export default function ProjectPage() {
             try {
                 setLoading(true);
                 setError(null);
-                // TODO: Get tenant ID from auth context
-                const tenantId = 'current-tenant-id';
+                const tenantId = localStorage.getItem('tenantId');
+                if (!tenantId) {
+                    throw new Error('Tenant ID not found');
+                }
                 const projectId = params.id as string;
                 const projectData = await getProject(tenantId, projectId);
                 setProject(projectData);

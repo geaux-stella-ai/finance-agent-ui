@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { useParams } from 'next/navigation'
+import { useParams, useRouter } from 'next/navigation'
 import { useToast } from '@/components/ui/use-toast'
 import apiClient from '@/lib/api-client'
 import { Button } from '@/components/ui/button'
@@ -15,6 +15,8 @@ import {
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { TextArea } from '@/components/ui/textarea'
+import { ArrowRight } from 'lucide-react'
+import { motion } from 'framer-motion'
 
 interface Project {
     id: string
@@ -30,6 +32,7 @@ interface ProjectsResponse {
 
 export default function TenantProjectsPage() {
     const params = useParams()
+    const router = useRouter()
     const { toast } = useToast()
     const [projects, setProjects] = useState<Project[]>([])
     const [isLoading, setIsLoading] = useState(true)
@@ -157,16 +160,26 @@ export default function TenantProjectsPage() {
             ) : (
                 <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                     {projects.map((project: Project) => (
-                        <div
+                        <motion.div
                             key={project.id}
-                            className="p-4 border rounded-lg hover:shadow-md transition-shadow"
+                            className="group relative p-6 border rounded-lg bg-card hover:shadow-lg transition-all duration-200 cursor-pointer"
+                            onClick={() => router.push(`/tenants/${params.tenantId}/projects/${project.id}/workspace`)}
+                            whileHover={{ scale: 1.02 }}
+                            whileTap={{ scale: 0.98 }}
                         >
-                            <h2 className="text-xl font-semibold mb-2">{project.name}</h2>
-                            <p className="text-muted-foreground mb-4">{project.description}</p>
-                            <p className="text-sm text-muted-foreground">
-                                Created: {new Date(project.created_at).toLocaleDateString()}
-                            </p>
-                        </div>
+                            <div className="flex flex-col h-full">
+                                <h2 className="text-xl font-semibold mb-2 group-hover:text-brand transition-colors">
+                                    {project.name}
+                                </h2>
+                                <p className="text-muted-foreground mb-4 flex-grow">
+                                    {project.description || 'No description provided'}
+                                </p>
+                                <div className="flex items-center justify-between text-sm text-muted-foreground">
+                                    <span>Created: {new Date(project.created_at).toLocaleDateString()}</span>
+                                    <ArrowRight className="w-4 h-4 opacity-0 group-hover:opacity-100 transition-opacity" />
+                                </div>
+                            </div>
+                        </motion.div>
                     ))}
                 </div>
             )}

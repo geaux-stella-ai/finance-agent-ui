@@ -2,7 +2,7 @@ import apiClient from '../api-client';
 import { Project, ProjectCreate, PaginatedResponse } from '@/types/project';
 
 export async function createProject(tenantId: string, project: ProjectCreate): Promise<Project> {
-    const response = await apiClient.post(`/tenants/${tenantId}/projects`, project);
+    const response = await apiClient.post(`/api/v1/tenants/${tenantId}/projects`, project);
     return response.data;
 }
 
@@ -17,11 +17,11 @@ export async function listProjects(
         params.append('page_token', pageToken);
     }
 
-    const response = await apiClient.get(`/tenants/${tenantId}/projects?${params.toString()}`);
+    const response = await apiClient.get(`/api/v1/tenants/${tenantId}/projects?${params.toString()}`);
     return response.data;
 }
 
 export async function getProject(tenantId: string, projectId: string): Promise<Project> {
-    const response = await apiClient.get(`/tenants/${tenantId}/projects/${projectId}`);
+    const response = await apiClient.get(`/api/v1/tenants/${tenantId}/projects/${projectId}`);
     return response.data;
 } 

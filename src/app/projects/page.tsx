@@ -27,8 +27,10 @@ export default function ProjectsPage() {
         try {
             setLoading(true);
             setError(null);
-            // TODO: Get tenant ID from auth context
-            const tenantId = 'current-tenant-id';
+            const tenantId = localStorage.getItem('tenantId');
+            if (!tenantId) {
+                throw new Error('Tenant ID not found');
+            }
             const response = await listProjects(tenantId, 10, pageToken);
             if (pageToken) {
                 setProjects(prev => [...prev, ...response.items]);
@@ -51,8 +53,10 @@ export default function ProjectsPage() {
     const handleCreateProject = async () => {
         try {
             setError(null);
-            // TODO: Get tenant ID from auth context
-            const tenantId = 'current-tenant-id';
+            const tenantId = localStorage.getItem('tenantId');
+            if (!tenantId) {
+                throw new Error('Tenant ID not found');
+            }
             const project = await createProject(tenantId, newProject);
             setProjects(prev => [project, ...prev]);
             setNewProject({

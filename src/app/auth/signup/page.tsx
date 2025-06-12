@@ -7,9 +7,11 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import Link from 'next/link'
 import apiClient from '@/lib/api-client'
+import { useToast } from '@/components/ui/use-toast'
 
 export default function SignUpPage() {
     const router = useRouter()
+    const { toast } = useToast()
     const [formData, setFormData] = useState({
         email: '',
         password: '',
@@ -31,11 +33,22 @@ export default function SignUpPage() {
         try {
             console.log('API URL:', process.env.NEXT_PUBLIC_API_URL);
             const { data } = await apiClient.post('/api/v1/users/register', formData)
-            localStorage.setItem('token', data.token)
-            router.push('/projects')
+
+            // Show success message
+            toast({
+                title: "Account created successfully",
+                description: "Please sign in to continue",
+            })
+
+            // Redirect to sign in page
+            router.push('/auth/signin')
         } catch (error) {
             console.error('Registration failed:', error)
-            // Handle error (show error message to user)
+            toast({
+                title: "Registration failed",
+                description: "Please try again",
+                variant: "destructive",
+            })
         } finally {
             setIsLoading(false)
         }
