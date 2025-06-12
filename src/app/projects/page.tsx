@@ -2,57 +2,74 @@
 
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Plus } from 'lucide-react';
-import { Project, generateSampleProject } from '@/types/project';
+import { Project, ProjectCreate } from '@/types/project';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { TextArea } from '@/components/ui/textarea';
 import { useRouter } from 'next/navigation';
-
-// Generate sample projects
-const sampleProjects: Project[] = [
-    generateSampleProject('1'),
-    generateSampleProject('2'),
-    generateSampleProject('3'),
-];
+import { createProject, listProjects } from '@/lib/api/projects';
 
 export default function ProjectsPage() {
     const router = useRouter();
     const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
-    const [projects, setProjects] = useState<Project[]>(sampleProjects);
-    const [newProject, setNewProject] = useState<Partial<Project>>({
+    const [projects, setProjects] = useState<Project[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
+    const [nextToken, setNextToken] = useState<string | undefined>();
+    const [newProject, setNewProject] = useState<ProjectCreate>({
         name: '',
         description: '',
-        client: {
-            name: '',
-            industry: '',
-        },
     });
 
-    const handleCreateProject = () => {
-        const project: Project = {
-            id: Math.random().toString(36).substr(2, 9),
-            name: newProject.name || '',
-            description: newProject.description || '',
-            createdAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString(),
-            client: newProject.client || {
-                name: '',
-                industry: '',
-            },
-        };
+    const loadProjects = async (pageToken?: string) => {
+        try {
+            setLoading(true);
+            setError(null);
+            // TODO: Get tenant ID from auth context
+            const tenantId = 'current-tenant-id';
+            const response = await listProjects(tenantId, 10, pageToken);
+            if (pageToken) {
+                setProjects(prev => [...prev, ...response.items]);
+            } else {
+                setProjects(response.items);
+            }
+            setNextToken(response.next_token);
+        } catch (err) {
+            setError('Failed to load projects');
+            console.error('Error loading projects:', err);
+        } finally {
+            setLoading(false);
+        }
+    };
 
-        setProjects([...projects, project]);
-        setNewProject({
-            name: '',
-            description: '',
-            client: {
+    useEffect(() => {
+        loadProjects();
+    }, []);
+
+    const handleCreateProject = async () => {
+        try {
+            setError(null);
+            // TODO: Get tenant ID from auth context
+            const tenantId = 'current-tenant-id';
+            const project = await createProject(tenantId, newProject);
+            setProjects(prev => [project, ...prev]);
+            setNewProject({
                 name: '',
-                industry: '',
-            },
-        });
-        setIsCreateDialogOpen(false);
+                description: '',
+            });
+            setIsCreateDialogOpen(false);
+        } catch (err) {
+            setError('Failed to create project');
+            console.error('Error creating project:', err);
+        }
+    };
+
+    const handleLoadMore = () => {
+        if (nextToken) {
+            loadProjects(nextToken);
+        }
     };
 
     return (
@@ -79,7 +96,7 @@ export default function ProjectsPage() {
                                     <Input
                                         id="name"
                                         value={newProject.name}
-                                        onChange={(e: React.ChangeEvent<HTMLInputElement>) => setNewProject({ ...newProject, name: e.target.value })}
+                                        onChange={(e) => setNewProject({ ...newProject, name: e.target.value })}
                                         placeholder="Enter project name"
                                     />
                                 </div>
@@ -87,41 +104,12 @@ export default function ProjectsPage() {
                                     <Label htmlFor="description">Description</Label>
                                     <TextArea
                                         id="description"
-                                        value={newProject.description}
-                                        onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setNewProject({ ...newProject, description: e.target.value })}
+                                        value={newProject.description || ''}
+                                        onChange={(e) => setNewProject({ ...newProject, description: e.target.value })}
                                         placeholder="Enter project description"
                                     />
                                 </div>
-                                <div className="space-y-2">
-                                    <Label htmlFor="clientName">Client Name</Label>
-                                    <Input
-                                        id="clientName"
-                                        value={newProject.client?.name}
-                                        onChange={(e: React.ChangeEvent<HTMLInputElement>) => setNewProject({
-                                            ...newProject,
-                                            client: {
-                                                name: e.target.value,
-                                                industry: newProject.client?.industry || ''
-                                            }
-                                        })}
-                                        placeholder="Enter client name"
-                                    />
-                                </div>
-                                <div className="space-y-2">
-                                    <Label htmlFor="clientIndustry">Client Industry</Label>
-                                    <Input
-                                        id="clientIndustry"
-                                        value={newProject.client?.industry}
-                                        onChange={(e: React.ChangeEvent<HTMLInputElement>) => setNewProject({
-                                            ...newProject,
-                                            client: {
-                                                name: newProject.client?.name || '',
-                                                industry: e.target.value
-                                            }
-                                        })}
-                                        placeholder="Enter client industry"
-                                    />
-                                </div>
+                                {error && <div className="text-destructive text-sm">{error}</div>}
                                 <Button
                                     className="w-full bg-brand text-white hover:bg-brand/90"
                                     onClick={handleCreateProject}
@@ -133,6 +121,8 @@ export default function ProjectsPage() {
                     </Dialog>
                 </div>
 
+                {error && <div className="text-destructive mb-4">{error}</div>}
+
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                     {projects.map((project) => (
                         <div
@@ -142,20 +132,26 @@ export default function ProjectsPage() {
                         >
                             <h2 className="text-xl font-semibold mb-2">{project.name}</h2>
                             <p className="text-muted-foreground mb-4">{project.description}</p>
-
-                            {project.client && (
-                                <div className="mb-4">
-                                    <h3 className="text-sm font-medium mb-1">Client</h3>
-                                    <p className="text-muted-foreground text-sm">{project.client.name}</p>
-                                </div>
-                            )}
-
                             <div className="text-sm text-muted-foreground">
-                                Created: {new Date(project.createdAt).toLocaleDateString()}
+                                Created: {new Date(project.created_at).toLocaleDateString()}
                             </div>
                         </div>
                     ))}
                 </div>
+
+                {loading && <div className="text-center mt-8">Loading...</div>}
+
+                {nextToken && !loading && (
+                    <div className="text-center mt-8">
+                        <Button
+                            variant="outline"
+                            onClick={handleLoadMore}
+                            disabled={loading}
+                        >
+                            Load More
+                        </Button>
+                    </div>
+                )}
             </div>
         </div>
     );

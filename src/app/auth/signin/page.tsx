@@ -35,14 +35,32 @@ export default function SignInPage() {
                 throw new Error('Invalid credentials')
             }
 
-            localStorage.setItem('token', response.data.access_token)
+            const token = response.data.access_token
+            localStorage.setItem('token', token)
+
+            // Fetch user info to get tenant details
+            const userResponse = await apiClient.get('/api/v1/users/me', {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            })
+
+            if (userResponse.status !== 200) {
+                throw new Error('Failed to fetch user information')
+            }
+
+            const userData = userResponse.data
+            if (!userData.tenant || !userData.tenant.id) {
+                throw new Error('No tenant information found')
+            }
 
             toast({
                 title: "Success",
                 description: "Successfully signed in",
             })
 
-            router.push('/projects')
+            // Redirect to tenant-specific projects page
+            router.push(`/tenants/${userData.tenant.id}/projects`)
         } catch (error) {
             console.error('Sign in failed:', error)
             toast({
