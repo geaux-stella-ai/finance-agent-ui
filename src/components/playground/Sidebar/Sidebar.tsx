@@ -43,11 +43,12 @@ const NewChatButton = ({
 const DocumentsButton = ({ disabled }: { disabled: boolean }) => {
   const router = useRouter();
   const params = useParams();
-  const projectId = params.id as string;
+  const projectId = params.projectId as string;
+  const tenantId = params.tenantId as string;
 
   const handleClick = () => {
-    if (projectId) {
-      router.push(`/projects/${projectId}/documents`)
+    if (projectId && tenantId) {
+      router.push(`/tenants/${tenantId}/projects/${projectId}/documents`)
     } else {
       toast.error('No project selected')
     }

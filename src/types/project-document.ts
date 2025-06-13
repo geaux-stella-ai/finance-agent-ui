@@ -1,30 +1,17 @@
 export type FileFormat = 'csv' | 'xlsx';
 
-export type FinancialDocumentType = 'balance_sheet' | 'income_statement' | 'other';
+export type TabularDocumentType = 'balance_sheet' | 'income_statement';
 
 export interface ProjectDocument {
     id: string;
-    fileName: string;
-    fileFormat: FileFormat;
-    financialDocumentType: FinancialDocumentType;
-    url: string;
-    uploadedAt: Date;
+    name: string;
+    type: TabularDocumentType;
+    company: string;
+    annotation?: string;
+    file_size_byte: number;
+    full_table_name: string;
+    project_id: string;
+    created_at: string;
 }
 
-export const fakeProjectDocument1: ProjectDocument = {
-    id: '1',
-    fileName: 'balance_sheet.csv',
-    fileFormat: 'csv',
-    financialDocumentType: 'balance_sheet',
-    url: 'https://www.google.com',
-    uploadedAt: new Date('2025-01-01T00:00:00.000Z'),
-}
-
-export const fakeProjectDocument2: ProjectDocument = {
-    id: '2',
-    fileName: 'income_statement.csv',
-    fileFormat: 'csv',
-    financialDocumentType: 'income_statement',
-    url: 'https://www.google.com',
-    uploadedAt: new Date('2025-01-01T00:00:00.000Z'),
-}
+// Remove fake documents as we'll fetch from backend
