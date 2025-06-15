@@ -2,11 +2,13 @@ import { useCallback } from 'react'
 import { toast } from 'sonner'
 
 import { usePlaygroundStore } from '../store'
+import { useWorkspaceParams } from './useWorkspaceParams'
 
 import { ComboboxAgent, type PlaygroundChatMessage } from '@/types/playground'
 import {
   getPlaygroundAgentsAPI,
-  getPlaygroundStatusAPI
+  getProjectAgentsAPI,
+  getWorkspaceStatusAPI
 } from '@/api/playground'
 import { useQueryState } from 'nuqs'
 
@@ -24,10 +26,11 @@ const useChatActions = () => {
   const setAgents = usePlaygroundStore((state) => state.setAgents)
   const setSelectedModel = usePlaygroundStore((state) => state.setSelectedModel)
   const [agentId, setAgentId] = useQueryState('agent')
+  const { tenantId, projectId } = useWorkspaceParams()
 
   const getStatus = useCallback(async () => {
     try {
-      const status = await getPlaygroundStatusAPI(selectedEndpoint)
+      const status = await getWorkspaceStatusAPI(selectedEndpoint, tenantId, projectId)
       return status
     } catch {
       return 503
@@ -36,7 +39,8 @@ const useChatActions = () => {
 
   const getAgents = useCallback(async () => {
     try {
-      const agents = await getPlaygroundAgentsAPI(selectedEndpoint)
+      const agents = await getProjectAgentsAPI(selectedEndpoint, tenantId, projectId)
+      console.debug(agents)
       return agents
     } catch {
       toast.error('Error fetching agents')
@@ -97,6 +101,15 @@ const useChatActions = () => {
     setSelectedModel,
     agentId
   ])
+
+  const checkWorkspaceStatus = async () => {
+    try {
+      const status = await getWorkspaceStatusAPI(selectedEndpoint, tenantId, projectId)
+      // ... rest of the function
+    } catch (error) {
+      // ... error handling
+    }
+  }
 
   return {
     clearChat,

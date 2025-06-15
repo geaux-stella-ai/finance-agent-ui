@@ -1,7 +1,8 @@
 import { useCallback } from 'react'
 import {
   getPlaygroundSessionAPI,
-  getAllPlaygroundSessionsAPI
+  getAllPlaygroundSessionsAPI,
+  getAllProjectSessionsAPI
 } from '@/api/playground'
 import { usePlaygroundStore } from '../store'
 import { toast } from 'sonner'
@@ -34,12 +35,14 @@ const useSessionLoader = () => {
   const setSessionsData = usePlaygroundStore((state) => state.setSessionsData)
 
   const getSessions = useCallback(
-    async (agentId: string) => {
+    async (agentId: string, tenantId: string, projectId: string) => {
       if (!agentId || !selectedEndpoint) return
       try {
         setIsSessionsLoading(true)
-        const sessions = await getAllPlaygroundSessionsAPI(
+        const sessions = await getAllProjectSessionsAPI(
           selectedEndpoint,
+          tenantId,
+          projectId,
           agentId
         )
         setSessionsData(sessions)

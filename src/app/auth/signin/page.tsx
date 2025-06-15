@@ -8,6 +8,7 @@ import { Label } from '@/components/ui/label'
 import Link from 'next/link'
 import { useToast } from '@/components/ui/use-toast'
 import apiClient from '@/lib/api-client'
+import { useAuthStore } from '@/store/auth'
 
 export default function SignInPage() {
     const router = useRouter()
@@ -36,7 +37,7 @@ export default function SignInPage() {
             }
 
             const token = response.data.access_token
-            localStorage.setItem('token', token)
+            useAuthStore.getState().setToken(token)
 
             // Fetch user info to get tenant details
             const userResponse = await apiClient.get('/api/v1/users/me', {

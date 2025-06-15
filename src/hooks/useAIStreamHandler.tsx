@@ -1,6 +1,7 @@
 import { useCallback } from 'react'
 
 import { APIRoutes } from '@/api/routes'
+import { useAuthStore } from '@/store/auth'
 
 import useChatActions from '@/hooks/useChatActions'
 import { usePlaygroundStore } from '../store'
@@ -10,12 +11,15 @@ import useAIResponseStream from './useAIResponseStream'
 import { ToolCall } from '@/types/playground'
 import { useQueryState } from 'nuqs'
 import { getJsonMarkdown } from '@/lib/utils'
+import { useWorkspaceParams } from './useWorkspaceParams'
 
 /**
  * useAIChatStreamHandler is responsible for making API calls and handling the stream response.
  * For now, it only streams message content and updates the messages state.
  */
 const useAIChatStreamHandler = () => {
+  const { tenantId, projectId } = useWorkspaceParams()
+  const token = useAuthStore((state) => state.token)
   const setMessages = usePlaygroundStore((state) => state.setMessages)
   const { addMessage, focusChatInput } = useChatActions()
   const [agentId] = useQueryState('agent')
@@ -84,10 +88,7 @@ const useAIChatStreamHandler = () => {
         const endpointUrl = constructEndpointUrl(selectedEndpoint)
 
         if (!agentId) return
-        const playgroundRunUrl = APIRoutes.AgentRun(endpointUrl).replace(
-          '{agent_id}',
-          agentId
-        )
+        const playgroundRunUrl = APIRoutes.ProjectAgentRun(endpointUrl, tenantId, projectId, agentId)
 
         formData.append('stream', 'true')
         formData.append('session_id', sessionId ?? '')
@@ -95,6 +96,9 @@ const useAIChatStreamHandler = () => {
         await streamResponse({
           apiUrl: playgroundRunUrl,
           requestBody: formData,
+          headers: {
+            'Authorization': `Bearer ${token}`
+          },
           onChunk: (chunk: RunResponse) => {
             if (
               chunk.event === RunEvent.RunStarted ||
@@ -254,7 +258,7 @@ const useAIChatStreamHandler = () => {
               )
             }
           },
-          onComplete: () => {}
+          onComplete: () => { }
         })
       } catch (error) {
         updateMessagesWithErrorState()
@@ -287,7 +291,8 @@ const useAIChatStreamHandler = () => {
       setSessionsData,
       sessionId,
       setSessionId,
-      hasStorage
+      hasStorage,
+      token
     ]
   )
 
