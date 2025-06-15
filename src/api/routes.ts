@@ -34,4 +34,13 @@ export const APIRoutes = {
 
   ProjectAgentRun: (BaseUrl: string, tenantId: string, projectId: string, agentId: string) =>
     `${BaseUrl}/api/v1/tenants/${tenantId}/projects/${projectId}/agents/${agentId}/run`,
+
+  GetProjectSession: (
+    BaseUrl: string,
+    tenantId: string,
+    projectId: string,
+    agentId: string,
+    sessionId: string
+  ) =>
+    `${BaseUrl}/api/v1/tenants/${tenantId}/projects/${projectId}/agents/${agentId}/sessions/${sessionId}`,
 }

@@ -97,8 +97,8 @@ const Sessions = () => {
 
   // Load a session on render if a session id exists in url
   useEffect(() => {
-    if (sessionId && agentId && selectedEndpoint && hydrated) {
-      getSession(sessionId, agentId)
+    if (sessionId && agentId && selectedEndpoint && hydrated && tenantId && projectId) {
+      getSession(sessionId, agentId, tenantId, projectId)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [hydrated])

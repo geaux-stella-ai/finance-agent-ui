@@ -2,7 +2,8 @@ import { useCallback } from 'react'
 import {
   getPlaygroundSessionAPI,
   getAllPlaygroundSessionsAPI,
-  getAllProjectSessionsAPI
+  getAllProjectSessionsAPI,
+  getProjectSessionAPI
 } from '@/api/playground'
 import { usePlaygroundStore } from '../store'
 import { toast } from 'sonner'
@@ -56,14 +57,16 @@ const useSessionLoader = () => {
   )
 
   const getSession = useCallback(
-    async (sessionId: string, agentId: string) => {
-      if (!sessionId || !agentId || !selectedEndpoint) {
+    async (sessionId: string, agentId: string, tenantId: string, projectId: string) => {
+      if (!sessionId || !agentId || !tenantId || !projectId) {
         return null
       }
 
       try {
-        const response = (await getPlaygroundSessionAPI(
+        const response = (await getProjectSessionAPI(
           selectedEndpoint,
+          tenantId,
+          projectId,
           agentId,
           sessionId
         )) as SessionResponse

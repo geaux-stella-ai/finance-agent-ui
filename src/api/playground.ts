@@ -124,6 +124,19 @@ export const getAllPlaygroundSessionsAPI = async (
   }
 }
 
+export const getProjectSessionAPI = async (
+  base: string,
+  tenantId: string,
+  projectId: string,
+  agentId: string,
+  sessionId: string
+) => {
+  const response = await apiClient.get(
+    APIRoutes.GetProjectSession(base, tenantId, projectId, agentId, sessionId)
+  )
+  return response.data
+}
+
 export const getPlaygroundSessionAPI = async (
   base: string,
   agentId: string,
