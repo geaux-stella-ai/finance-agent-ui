@@ -10,6 +10,7 @@ import { useState } from 'react'
 import DeleteSessionModal from './DeleteSessionModal'
 import useChatActions from '@/hooks/useChatActions'
 import { truncateText, cn } from '@/lib/utils'
+import { useWorkspaceParams } from '@/hooks/useWorkspaceParams'
 
 type SessionItemProps = SessionEntry & {
   isSelected: boolean
@@ -28,11 +29,12 @@ const SessionItem = ({
     usePlaygroundStore()
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
   const { clearChat } = useChatActions()
+  const { tenantId, projectId } = useWorkspaceParams()
 
   const handleGetSession = async () => {
-    if (agentId) {
+    if (agentId && tenantId && projectId) {
       onSessionClick()
-      await getSession(session_id, agentId)
+      await getSession(session_id, agentId, tenantId, projectId)
       setSessionId(session_id)
     }
   }

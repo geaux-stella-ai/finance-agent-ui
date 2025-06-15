@@ -36,27 +36,31 @@ export interface ProjectDocument {
 
 export interface Project {
     id: string;
+    tenant_id: string;
     name: string;
-    description: string;
-    createdAt: string;
-    updatedAt: string;
-    client?: {
-        name: string;
-        industry: string;
-    };
+    description: string | null;
+    created_at: string;
+    updated_at: string;
 }
 
-// Sample data generator function
+export interface ProjectCreate {
+    name: string;
+    description?: string;
+}
+
+export interface PaginatedResponse<T> {
+    items: T[];
+    next_token?: string;
+}
+
+// Sample data generator function for development
 export function generateSampleProject(id: string): Project {
     return {
         id,
-        name: 'OpenAI - 409A ',
-        description: 'OpenAI is a company that is valued at $100 billion. We are doing a 409A valuation for them.',
-        createdAt: '2024-03-15',
-        updatedAt: '2024-03-15',
-        client: {
-            name: 'OpenAI',
-            industry: 'Technology',
-        },
+        tenant_id: 'sample-tenant',
+        name: 'Sample Project',
+        description: 'This is a sample project for development purposes',
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
     };
 } 

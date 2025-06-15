@@ -19,11 +19,8 @@ export default function ProjectDetails({ project }: ProjectDetailsProps) {
                         <h1 className="text-4xl font-bold tracking-tight mb-2">{project.name}</h1>
                         <div className="text-muted-foreground text-base mb-2">{project.description}</div>
                         <div className="flex flex-wrap gap-4 text-sm text-muted-foreground">
-                            {project.client && (
-                                <span className="inline-block"><span className="font-semibold">Client:</span> {project.client.name} ({project.client.industry})</span>
-                            )}
-                            <span className="inline-block"><span className="font-semibold">Created:</span> {new Date(project.createdAt).toLocaleDateString()}</span>
-                            <span className="inline-block"><span className="font-semibold">Last Updated:</span> {new Date(project.updatedAt).toLocaleDateString()}</span>
+                            <span className="inline-block"><span className="font-semibold">Created:</span> {new Date(project.created_at).toLocaleDateString()}</span>
+                            <span className="inline-block"><span className="font-semibold">Last Updated:</span> {new Date(project.updated_at).toLocaleDateString()}</span>
                         </div>
                     </div>
                     <div className={`flex flex-col gap-2 ${scopeOpen ? 'min-h-[80px]' : ''}`}>

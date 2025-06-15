@@ -1,6 +1,7 @@
 'use client'
 import { ArrowRight, Bot, Zap, PlaneTakeoff } from 'lucide-react'
 import { useRouter } from 'next/navigation'
+import { Button } from '@/components/ui/button'
 
 export default function SalesPage() {
   const router = useRouter()
@@ -16,13 +17,22 @@ export default function SalesPage() {
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
             Transform your financial modeling with AI-powered autopilot, integrated tools, and digital associates.
           </p>
-          <button
-            onClick={() => router.push('/projects')}
-            className="bg-brand text-white px-8 py-3 rounded-lg font-medium hover:bg-brand/90 transition-colors inline-flex items-center gap-2 mt-20"
-          >
-            Get Started
-            <ArrowRight className="w-4 h-4" />
-          </button>
+          <div className="flex items-center justify-center gap-4 mt-20">
+            <Button
+              onClick={() => router.push('/auth/signin')}
+              variant="outline"
+              className="px-8 py-3"
+            >
+              Sign in
+            </Button>
+            <Button
+              onClick={() => router.push('/auth/signup')}
+              className="bg-brand text-white px-8 py-3 hover:bg-brand/90"
+            >
+              Get Started
+              <ArrowRight className="w-4 h-4 ml-2" />
+            </Button>
+          </div>
         </div>
       </div>
 

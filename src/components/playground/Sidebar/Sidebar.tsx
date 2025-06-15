@@ -13,6 +13,7 @@ import { toast } from 'sonner'
 import { useQueryState } from 'nuqs'
 import { truncateText } from '@/lib/utils'
 import { Skeleton } from '@/components/ui/skeleton'
+import { useRouter, useParams } from 'next/navigation'
 const ENDPOINT_PLACEHOLDER = 'NO ENDPOINT ADDED'
 const SidebarHeader = () => (
   <div className="flex items-center gap-2">
@@ -38,6 +39,33 @@ const NewChatButton = ({
     <span className="uppercase">New Chat</span>
   </Button>
 )
+
+const DocumentsButton = ({ disabled }: { disabled: boolean }) => {
+  const router = useRouter();
+  const params = useParams();
+  const projectId = params.projectId as string;
+  const tenantId = params.tenantId as string;
+
+  const handleClick = () => {
+    if (projectId && tenantId) {
+      router.push(`/tenants/${tenantId}/projects/${projectId}/documents`)
+    } else {
+      toast.error('No project selected')
+    }
+  }
+
+  return (
+    <Button
+      onClick={handleClick}
+      disabled={disabled}
+      size="lg"
+      className="h-9 w-full rounded-xl bg-primary text-xs font-medium text-background hover:bg-primary/80"
+    >
+      <Icon type="sheet" size="xs" className="text-background" />
+      <span className="uppercase">Documents</span>
+    </Button>
+  );
+};
 
 const ModelDisplay = ({ model }: { model: string }) => (
   <div className="flex h-9 w-full items-center gap-3 rounded-xl border border-primary/15 bg-accent p-3 text-xs font-medium uppercase text-muted">
@@ -168,7 +196,7 @@ const Endpoint = () => {
                   <p className="text-xs font-medium text-muted">
                     {isMounted
                       ? truncateText(selectedEndpoint, 21) ||
-                        ENDPOINT_PLACEHOLDER
+                      ENDPOINT_PLACEHOLDER
                       : 'http://localhost:7777'}
                   </p>
                   <div
@@ -253,6 +281,7 @@ const Sidebar = () => {
           disabled={messages.length === 0}
           onClick={handleNewChat}
         />
+        <DocumentsButton disabled={false} />
         {isMounted && (
           <>
             <Endpoint />
@@ -265,7 +294,7 @@ const Sidebar = () => {
                   transition={{ duration: 0.5, ease: 'easeInOut' }}
                 >
                   <div className="text-xs font-medium uppercase text-primary">
-                    Agent
+                    Junior Associate
                   </div>
                   {isEndpointLoading ? (
                     <div className="flex w-full flex-col gap-2">

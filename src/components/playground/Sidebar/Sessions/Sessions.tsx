@@ -13,6 +13,7 @@ import useSessionLoader from '@/hooks/useSessionLoader'
 import { cn } from '@/lib/utils'
 import { FC } from 'react'
 import { Skeleton } from '@/components/ui/skeleton'
+import { useWorkspaceParams } from '@/hooks/useWorkspaceParams'
 
 interface SkeletonListProps {
   skeletonCount: number
@@ -48,6 +49,9 @@ const formatDate = (
 }
 
 const Sessions = () => {
+
+  const { tenantId, projectId } = useWorkspaceParams()
+
   const [agentId] = useQueryState('agent', {
     parse: (value) => value || undefined,
     history: 'push'
@@ -93,20 +97,20 @@ const Sessions = () => {
 
   // Load a session on render if a session id exists in url
   useEffect(() => {
-    if (sessionId && agentId && selectedEndpoint && hydrated) {
-      getSession(sessionId, agentId)
+    if (sessionId && agentId && selectedEndpoint && hydrated && tenantId && projectId) {
+      getSession(sessionId, agentId, tenantId, projectId)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [hydrated])
 
   useEffect(() => {
-    if (!selectedEndpoint || !agentId || !hasStorage) {
+    if (!selectedEndpoint || !agentId || !hasStorage || !tenantId || !projectId) {
       setSessionsData(() => null)
       return
     }
     if (!isEndpointLoading) {
       setSessionsData(() => null)
-      getSessions(agentId)
+      getSessions(agentId, tenantId, projectId)
     }
   }, [
     selectedEndpoint,
@@ -157,8 +161,8 @@ const Sessions = () => {
         onMouseLeave={handleScroll}
       >
         {!isEndpointActive ||
-        !hasStorage ||
-        (!isSessionsLoading && (!sessionsData || sessionsData.length === 0)) ? (
+          !hasStorage ||
+          (!isSessionsLoading && (!sessionsData || sessionsData.length === 0)) ? (
           <SessionBlankState />
         ) : (
           <div className="flex flex-col gap-y-1 pr-1">
