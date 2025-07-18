@@ -1,6 +1,6 @@
 # Agent UI
 
-A modern interface for financial agents built with Next.js, Tailwind CSS, and TypeScript. 
+A modern interface for financial agents built with Next.js, Tailwind CSS, and TypeScript.
 
 ## Features
 

@@ -7,11 +7,13 @@ import {
     DialogContent,
     DialogHeader,
     DialogTitle,
-    DialogClose
+    DialogClose,
+    DialogFooter,
 } from '@/components/ui/dialog';
 import { useRouter, useParams } from 'next/navigation';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Trash2 } from 'lucide-react';
 import apiClient from '@/lib/api-client';
+import { Button } from '@/components/ui/button';
 
 const documentTypes: TabularDocumentType[] = ['balance_sheet', 'income_statement'];
 
@@ -31,6 +33,9 @@ export default function DocumentsPage() {
     const [mainDialogOpen, setMainDialogOpen] = useState(false);
     const [nextToken, setNextToken] = useState<string | null>(null);
     const [loading, setLoading] = useState(false);
+    const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+    const [documentToDelete, setDocumentToDelete] = useState<ProjectDocument | null>(null);
+    const [deleting, setDeleting] = useState(false);
 
     useEffect(() => {
         fetchDocuments();
@@ -181,6 +186,39 @@ export default function DocumentsPage() {
         setPendingDoc(null);
     };
 
+    const handleDeleteClick = (document: ProjectDocument) => {
+        setDocumentToDelete(document);
+        setDeleteDialogOpen(true);
+    };
+
+    const handleDelete = async () => {
+        if (!documentToDelete) return;
+
+        setDeleting(true);
+        try {
+            await apiClient.delete(
+                `/api/v1/tenants/${params.tenantId}/projects/${params.projectId}/tabular_documents/${documentToDelete.id}`
+            );
+            await fetchDocuments(); // Refresh the list
+            setDeleteDialogOpen(false);
+            setDocumentToDelete(null);
+        } catch (error: any) {
+            console.error('Delete error:', error);
+            if (error.response?.data?.detail) {
+                setError(error.response.data.detail);
+            } else {
+                setError('Failed to delete document. Please try again.');
+            }
+        } finally {
+            setDeleting(false);
+        }
+    };
+
+    const handleCancelDelete = () => {
+        setDeleteDialogOpen(false);
+        setDocumentToDelete(null);
+    };
+
     return (
         <div className="min-h-screen bg-background/80">
             <div className="container mx-auto px-4 py-20">
@@ -293,6 +331,7 @@ export default function DocumentsPage() {
                         </div>
                     </DialogContent>
                 </Dialog>
+                {/* Document List */}
                 {documents.length === 0 ? (
                     <p className="text-muted-foreground text-lg">No documents yet. Upload or add documents for this project here.</p>
                 ) : (
@@ -306,6 +345,7 @@ export default function DocumentsPage() {
                                         <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-muted-foreground">Company</th>
                                         <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-muted-foreground">Uploaded At</th>
                                         <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-muted-foreground">Size</th>
+                                        <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-muted-foreground">Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-border">
@@ -316,6 +356,16 @@ export default function DocumentsPage() {
                                             <td className="px-6 py-4 whitespace-nowrap text-sm">{doc.company}</td>
                                             <td className="px-6 py-4 whitespace-nowrap text-sm">{new Date(doc.created_at).toLocaleDateString()}</td>
                                             <td className="px-6 py-4 whitespace-nowrap text-sm">{(doc.file_size_byte / 1024).toFixed(1)} KB</td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm">
+                                                <Button
+                                                    variant="ghost"
+                                                    size="icon"
+                                                    onClick={() => handleDeleteClick(doc)}
+                                                    className="text-destructive hover:text-destructive/80"
+                                                >
+                                                    <Trash2 className="h-4 w-4" />
+                                                </Button>
+                                            </td>
                                         </tr>
                                     ))}
                                 </tbody>
@@ -335,6 +385,33 @@ export default function DocumentsPage() {
                     </>
                 )}
             </div>
+            {/* Delete Confirmation Dialog */}
+            <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>Delete Document</DialogTitle>
+                    </DialogHeader>
+                    <p className="text-sm text-muted-foreground">
+                        Are you sure you want to delete "{documentToDelete?.name}"? This action cannot be undone.
+                    </p>
+                    <DialogFooter className="gap-2 sm:gap-0">
+                        <Button
+                            variant="outline"
+                            onClick={handleCancelDelete}
+                            disabled={deleting}
+                        >
+                            Cancel
+                        </Button>
+                        <Button
+                            variant="destructive"
+                            onClick={handleDelete}
+                            disabled={deleting}
+                        >
+                            {deleting ? 'Deleting...' : 'Delete'}
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
         </div>
     );
 } 
