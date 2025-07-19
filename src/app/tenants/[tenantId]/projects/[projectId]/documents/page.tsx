@@ -11,9 +11,11 @@ import {
     DialogFooter,
 } from '@/components/ui/dialog';
 import { useRouter, useParams } from 'next/navigation';
-import { ArrowLeft, Trash2 } from 'lucide-react';
+import { ArrowLeft, Trash2, ChevronDown, ChevronRight, Table } from 'lucide-react';
 import apiClient from '@/lib/api-client';
 import { Button } from '@/components/ui/button';
+import { fetchTables, fetchTableData, TableInfo } from '@/lib/api/tables';
+import { DataTable, TableData } from '@/components/data-table/DataTable';
 
 const documentTypes: TabularDocumentType[] = ['balance_sheet', 'income_statement'];
 
@@ -37,9 +39,72 @@ export default function DocumentsPage() {
     const [documentToDelete, setDocumentToDelete] = useState<ProjectDocument | null>(null);
     const [deleting, setDeleting] = useState(false);
 
+    // Table-related state
+    const [tables, setTables] = useState<TableInfo[]>([]);
+    const [selectedTableId, setSelectedTableId] = useState<string | null>(null);
+    const [tableData, setTableData] = useState<TableData | null>(null);
+    const [loadingTables, setLoadingTables] = useState(false);
+    const [loadingTableData, setLoadingTableData] = useState(false);
+    const [tableError, setTableError] = useState<string | null>(null);
+    const [tablesExpanded, setTablesExpanded] = useState(false);
+
     useEffect(() => {
         fetchDocuments();
+        loadTables();
     }, []);
+
+    const loadTables = async () => {
+        setLoadingTables(true);
+        setTableError(null);
+        try {
+            const tableList = await fetchTables(
+                params.tenantId as string,
+                params.projectId as string
+            );
+            setTables(tableList);
+            // Auto-expand if tables are found
+            if (tableList.length > 0) {
+                setTablesExpanded(true);
+            }
+        } catch (error) {
+            console.error('Error loading tables:', error);
+            setTableError('Failed to load tables');
+        } finally {
+            setLoadingTables(false);
+        }
+    };
+
+    const handleViewTable = async (tableId: string) => {
+        // If clicking the same table that's already selected, hide it
+        if (selectedTableId === tableId && tableData) {
+            setSelectedTableId(null);
+            setTableData(null);
+            return;
+        }
+
+        setSelectedTableId(tableId);
+        setLoadingTableData(true);
+        setTableError(null);
+
+        try {
+            const data = await fetchTableData(
+                params.tenantId as string,
+                params.projectId as string,
+                tableId
+            );
+            setTableData(data);
+        } catch (error) {
+            console.error('Error loading table data:', error);
+            setTableError('Failed to load table data');
+            setTableData(null);
+        } finally {
+            setLoadingTableData(false);
+        }
+    };
+
+    const toggleTablesSection = () => {
+        setTablesExpanded(!tablesExpanded);
+    };
 
     const fetchDocuments = async (token?: string) => {
         setLoading(true);
@@ -156,6 +221,7 @@ export default function DocumentsPage() {
             }
 
             await fetchDocuments(); // Refresh the documents list
+            await loadTables(); // Refresh the tables list
             setFile(null);
             setDocumentName('');
             setCompany('');
@@ -384,6 +450,93 @@ export default function DocumentsPage() {
                         )}
                     </>
                 )}
+
+                {/* Data Tables Section */}
+                <div className="mt-8">
+                    <div className="flex items-center justify-between mb-4">
+                        <div className="flex items-center gap-2">
+                            <button
+                                onClick={toggleTablesSection}
+                                className="flex items-center gap-2 text-2xl font-bold tracking-tight hover:text-primary transition-colors"
+                            >
+                                {tablesExpanded ? (
+                                    <ChevronDown className="w-6 h-6" />
+                                ) : (
+                                    <ChevronRight className="w-6 h-6" />
+                                )}
+                                Data Tables
+                            </button>
+                            {tables.length > 0 && (
+                                <span className="bg-primary/10 text-primary px-2 py-1 rounded-full text-sm font-medium">
+                                    {tables.length}
+                                </span>
+                            )}
+                        </div>
+                        {loadingTables && (
+                            <div className="text-sm text-muted-foreground">Loading tables...</div>
+                        )}
+                    </div>
+
+                    {tablesExpanded && (
+                        <div className="space-y-4">
+                            {tableError && (
+                                <div className="text-destructive font-medium bg-destructive/10 p-3 rounded-lg">
+                                    {tableError}
+                                </div>
+                            )}
+
+                            {tables.length === 0 && !loadingTables ? (
+                                <div className="text-muted-foreground bg-muted/50 p-8 rounded-lg text-center">
+                                    <Table className="w-12 h-12 mx-auto mb-3 text-muted-foreground/60" />
+                                    <p className="text-lg">No data tables found</p>
+                                    <p className="text-sm">Upload documents to generate data tables automatically</p>
+                                </div>
+                            ) : (
+                                <>
+                                    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                                        {tables.map((table) => (
+                                            <div key={table.table_id} className="border rounded-lg p-4 bg-card">
+                                                <div className="flex items-start justify-between mb-2">
+                                                    <h3 className="font-medium">{table.table_name.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}</h3>
+                                                    <span className={`text-xs px-2 py-1 rounded-full ${table.source === 'user_upload'
+                                                        ? 'bg-blue-100 text-blue-800'
+                                                        : 'bg-green-100 text-green-800'
+                                                        }`}>
+                                                        {table.source.replace('_', ' ')}
+                                                    </span>
+                                                </div>
+                                                <p className="text-sm text-muted-foreground mb-3">
+                                                    {table.row_count} rows • {table.column_count} columns
+                                                </p>
+                                                <Button
+                                                    size="sm"
+                                                    onClick={() => handleViewTable(table.table_id)}
+                                                    disabled={loadingTableData && selectedTableId === table.table_id}
+                                                    className="w-full"
+                                                    variant={selectedTableId === table.table_id && tableData ? "destructive" : "outline"}
+                                                >
+                                                    {loadingTableData && selectedTableId === table.table_id
+                                                        ? 'Loading...'
+                                                        : selectedTableId === table.table_id && tableData
+                                                            ? 'Hide Table'
+                                                            : 'View Table'
+                                                    }
+                                                </Button>
+                                            </div>
+                                        ))}
+                                    </div>
+
+                                    {/* Table Data Display */}
+                                    {tableData && (
+                                        <div className="mt-6">
+                                            <DataTable data={tableData} />
+                                        </div>
+                                    )}
+                                </>
+                            )}
+                        </div>
+                    )}
+                </div>
             </div>
             {/* Delete Confirmation Dialog */}
             <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
