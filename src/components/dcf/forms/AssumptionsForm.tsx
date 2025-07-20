@@ -59,22 +59,22 @@ export function AssumptionsForm({
 
   const loadSavedParameters = async () => {
     if (!tenantId || !projectId) return;
-    
+
     setIsLoadingParams(true);
     try {
       const savedParams = await parameterAPI.loadParametersForForm(tenantId, projectId);
-      
+
       // Merge saved parameters with defaults and initial data
       const mergedData = { ...defaultAssumptions, ...initialData, ...savedParams };
       reset(mergedData);
-      
+
       if (Object.keys(savedParams).length > 0) {
         toast({
           title: "Success",
           description: "Loaded saved parameters",
         });
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("Failed to load parameters:", error);
       // Don't show error toast for 404 (no parameters saved yet)
       if (error.response?.status !== 404) {
@@ -105,28 +105,28 @@ export function AssumptionsForm({
     try {
       // Convert form data to parameter format
       const parametersToSave: Record<string, { value: number; dataType: 'decimal' | 'percentage' }> = {};
-      
+
       if (formData.normalizedTaxRate !== undefined) {
         parametersToSave.normalizedTaxRate = {
           value: formData.normalizedTaxRate / 100, // Convert percentage to decimal
           dataType: 'percentage'
         };
       }
-      
+
       if (formData.normalizedNetWorkingCapital !== undefined) {
         parametersToSave.normalizedNetWorkingCapital = {
           value: formData.normalizedNetWorkingCapital,
           dataType: 'decimal'
         };
       }
-      
+
       if (formData.exitRevenueMultiple !== undefined) {
         parametersToSave.exitRevenueMultiple = {
           value: formData.exitRevenueMultiple,
           dataType: 'decimal'
         };
       }
-      
+
       if (formData.discountRate !== undefined) {
         parametersToSave.discountRate = {
           value: formData.discountRate / 100, // Convert percentage to decimal
@@ -135,10 +135,10 @@ export function AssumptionsForm({
       }
 
       await parameterAPI.saveParameters(tenantId, projectId, parametersToSave);
-      
+
       // Reset dirty state since we've saved
       reset(formData);
-      
+
       toast({
         title: "Success",
         description: "Parameters saved successfully",
@@ -161,7 +161,7 @@ export function AssumptionsForm({
       {isLoadingParams && (
         <div className="text-sm text-muted-foreground">Loading saved parameters...</div>
       )}
-      
+
       {/* Simplified DCF Assumptions */}
       <div className="space-y-4">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -222,26 +222,6 @@ export function AssumptionsForm({
             )}
           />
         </div>
-      </div>
-
-      {/* Action buttons */}
-      <div className="flex gap-3 pt-4">
-        <Button
-          type="button"
-          variant="outline"
-          onClick={saveParameters}
-          disabled={isSaving || isLoadingParams || !isDirty}
-          className="flex-1"
-        >
-          {isSaving ? "Saving..." : "Save Parameters"}
-        </Button>
-        <Button
-          type="submit"
-          disabled={isLoading || !isValid || isLoadingParams}
-          className="flex-1"
-        >
-          {isLoading ? "Calculating..." : "Run DCF Analysis"}
-        </Button>
       </div>
     </form>
   );
