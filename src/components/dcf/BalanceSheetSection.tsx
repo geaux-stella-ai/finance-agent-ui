@@ -1,20 +1,17 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { BalanceSheetTable } from "./tables";
 import { Edit, Table, ChevronDown } from "lucide-react";
-
-interface BalanceSheetData {
-  [metric: string]: {
-    [date: string]: number | null;
-  };
-}
+import { useParams } from "next/navigation";
+import { balanceSheetAPI, FrontendBalanceSheetData } from "@/lib/api/balance-sheet";
+import { toast } from "sonner";
 
 interface BalanceSheetSectionProps {
-  data?: BalanceSheetData;
-  onDataChange?: (data: BalanceSheetData) => void;
+  data?: FrontendBalanceSheetData;
+  onDataChange?: (data: FrontendBalanceSheetData) => void;
 }
 
 export function BalanceSheetSection({
@@ -23,6 +20,48 @@ export function BalanceSheetSection({
 }: BalanceSheetSectionProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const params = useParams();
+  
+  const tenantId = params.tenantId as string;
+  const projectId = params.projectId as string;
+
+  // Load data from backend on component mount
+  useEffect(() => {
+    const loadData = async () => {
+      if (!tenantId || !projectId) return;
+      
+      setIsLoading(true);
+      try {
+        const loadedData = await balanceSheetAPI.loadFrontendData(tenantId, projectId);
+        onDataChange(loadedData);
+      } catch (error) {
+        console.error('Failed to load balance sheet data:', error);
+        toast.error('Failed to load balance sheet data');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadData();
+  }, [tenantId, projectId, onDataChange]);
+
+  // Save data to backend
+  const handleSave = async () => {
+    if (!tenantId || !projectId) return;
+    
+    setIsSaving(true);
+    try {
+      await balanceSheetAPI.saveFrontendData(tenantId, projectId, data);
+      toast.success('Balance sheet data saved successfully');
+    } catch (error) {
+      console.error('Failed to save balance sheet data:', error);
+      toast.error('Failed to save balance sheet data');
+    } finally {
+      setIsSaving(false);
+    }
+  };
 
   // Calculate summary stats
   const columns = Object.keys(Object.values(data)[0] || {});
@@ -84,37 +123,42 @@ export function BalanceSheetSection({
             </div>
           </div>
 
-          {/* Action Button */}
-          <Dialog open={modalOpen} onOpenChange={setModalOpen}>
-            <DialogTrigger asChild>
-              <Button 
-                variant="outline" 
-                className="w-full flex items-center gap-2"
-              >
-                <Edit className="w-4 h-4" />
-                {filledCells > 0 ? 'Edit Balance Sheet' : 'Enter Balance Sheet Data'}
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="max-w-4xl max-h-[90vh] overflow-hidden">
-              <DialogHeader>
-                <DialogTitle>Balance Sheet Data Entry</DialogTitle>
-              </DialogHeader>
-              <div className="overflow-y-auto max-h-[calc(90vh-120px)] pr-2">
-                <BalanceSheetTable
-                  data={data}
-                  onDataChange={onDataChange}
-                  isEditable={true}
-                />
-              </div>
-            </DialogContent>
-          </Dialog>
+          {/* Action Buttons */}
+          <div className="flex gap-2">
+            <Dialog open={modalOpen} onOpenChange={setModalOpen}>
+              <DialogTrigger asChild>
+                <Button 
+                  variant="outline" 
+                  className="flex-1 flex items-center gap-2"
+                  disabled={isLoading}
+                >
+                  <Edit className="w-4 h-4" />
+                  {filledCells > 0 ? 'Edit Balance Sheet' : 'Enter Balance Sheet Data'}
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="max-w-4xl max-h-[90vh] overflow-hidden">
+                <DialogHeader>
+                  <DialogTitle>Balance Sheet Data Entry</DialogTitle>
+                </DialogHeader>
+                <div className="overflow-y-auto max-h-[calc(90vh-120px)] pr-2">
+                  <BalanceSheetTable
+                    data={data}
+                    onDataChange={onDataChange}
+                    isEditable={true}
+                    onSave={handleSave}
+                    isSaving={isSaving}
+                  />
+                </div>
+              </DialogContent>
+            </Dialog>
+          </div>
 
           {/* Quick Preview for filled data */}
           {filledCells > 0 && (
             <div className="text-xs text-muted-foreground">
               <div className="font-medium mb-1">Recent entries:</div>
               {Object.entries(data).slice(0, 2).map(([metric, values]) => {
-                const latestEntry = Object.entries(values).find(([_, value]) => value !== null);
+                const latestEntry = Object.entries(values).find(([, value]) => value !== null);
                 if (latestEntry) {
                   return (
                     <div key={metric} className="flex justify-between">

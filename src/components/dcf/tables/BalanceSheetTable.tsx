@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Plus, X, Edit } from "lucide-react";
+import { Plus, X, Edit, Save, Loader2 } from "lucide-react";
 
 interface BalanceSheetData {
   [metric: string]: {
@@ -15,6 +15,8 @@ interface BalanceSheetTableProps {
   data?: BalanceSheetData;
   onDataChange?: (data: BalanceSheetData) => void;
   isEditable?: boolean;
+  onSave?: () => Promise<void>;
+  isSaving?: boolean;
 }
 
 const PREDEFINED_METRICS = [
@@ -32,7 +34,9 @@ const DEFAULT_COLUMNS = [
 export function BalanceSheetTable({
   data = {},
   onDataChange = () => { },
-  isEditable = true
+  isEditable = true,
+  onSave,
+  isSaving = false
 }: BalanceSheetTableProps) {
   const [columns, setColumns] = useState<string[]>(
     Object.keys(data).length > 0
@@ -102,6 +106,7 @@ export function BalanceSheetTable({
     const updatedData = { ...tableData };
     PREDEFINED_METRICS.forEach(metric => {
       const { [dateToRemove]: removed, ...remaining } = updatedData[metric];
+      void removed; // Suppress unused variable warning
       updatedData[metric] = remaining;
     });
     onDataChange(updatedData);
@@ -141,17 +146,35 @@ export function BalanceSheetTable({
     <div className="w-full">
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-lg font-semibold">Balance Sheet</h3>
-        {isEditable && (
-          <Button
-            onClick={() => setShowAddColumn(true)}
-            size="sm"
-            variant="outline"
-            className="flex items-center gap-2"
-          >
-            <Plus className="w-4 h-4" />
-            Add Period
-          </Button>
-        )}
+        <div className="flex items-center gap-2">
+          {isEditable && (
+            <Button
+              onClick={() => setShowAddColumn(true)}
+              size="sm"
+              variant="outline"
+              className="flex items-center gap-2"
+            >
+              <Plus className="w-4 h-4" />
+              Add Period
+            </Button>
+          )}
+          {onSave && isEditable && (
+            <Button
+              onClick={onSave}
+              disabled={isSaving}
+              size="sm"
+              variant="outline"
+              className="flex items-center gap-2"
+            >
+              {isSaving ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                <Save className="w-4 h-4" />
+              )}
+              {isSaving ? 'Saving...' : 'Save'}
+            </Button>
+          )}
+        </div>
       </div>
 
       {/* Add Column Form */}
