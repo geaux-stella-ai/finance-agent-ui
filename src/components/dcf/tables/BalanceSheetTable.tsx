@@ -5,35 +5,35 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Plus, X, Edit } from "lucide-react";
 
-interface IncomeStatementData {
+interface BalanceSheetData {
   [metric: string]: {
     [date: string]: number | null;
   };
 }
 
-interface IncomeStatementTableProps {
-  data?: IncomeStatementData;
-  onDataChange?: (data: IncomeStatementData) => void;
+interface BalanceSheetTableProps {
+  data?: BalanceSheetData;
+  onDataChange?: (data: BalanceSheetData) => void;
   isEditable?: boolean;
 }
 
 const PREDEFINED_METRICS = [
-  "Total Revenue",
-  "Cost of Sales",
-  "Total Operating Expenses",
-  "Tax Depreciation Expenses",
-  "Less: Capital Expenditures"
+  "Current Assets",
+  "Total Assets",
+  "Current Liabilities",
+  "Total Liabilities",
+  "Total Shareholders' Equity"
 ];
 
 const DEFAULT_COLUMNS = [
   "2023-12-31"
 ];
 
-export function IncomeStatementTable({
+export function BalanceSheetTable({
   data = {},
   onDataChange = () => { },
   isEditable = true
-}: IncomeStatementTableProps) {
+}: BalanceSheetTableProps) {
   const [columns, setColumns] = useState<string[]>(
     Object.keys(data).length > 0
       ? Object.keys(Object.values(data)[0] || {})
@@ -51,7 +51,7 @@ export function IncomeStatementTable({
       return colAcc;
     }, {} as { [date: string]: number | null });
     return acc;
-  }, {} as IncomeStatementData);
+  }, {} as BalanceSheetData);
 
   // Initialize data with default columns when component first loads
   useEffect(() => {
@@ -140,7 +140,7 @@ export function IncomeStatementTable({
   return (
     <div className="w-full">
       <div className="flex items-center justify-between mb-4">
-        <h3 className="text-lg font-semibold">Income Statement</h3>
+        <h3 className="text-lg font-semibold">Balance Sheet</h3>
         {isEditable && (
           <Button
             onClick={() => setShowAddColumn(true)}

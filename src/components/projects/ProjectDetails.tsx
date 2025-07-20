@@ -1,7 +1,7 @@
 import { Project } from '@/types/project';
 import { ChevronDown } from 'lucide-react';
 import { useState } from 'react';
-import { AssumptionsForm, IncomeStatementSection } from '@/components/dcf';
+import { AssumptionsForm, IncomeStatementSection, BalanceSheetSection } from '@/components/dcf';
 import { DCFAssumptions } from '@/components/dcf/forms/assumptions-schema';
 
 interface ProjectDetailsProps {
@@ -13,6 +13,7 @@ export default function ProjectDetails({ project }: ProjectDetailsProps) {
     const [isCalculating, setIsCalculating] = useState(false);
     const [dcfResults, setDcfResults] = useState<any>(null);
     const [incomeStatementData, setIncomeStatementData] = useState({});
+    const [balanceSheetData, setBalanceSheetData] = useState({});
 
     const handleDcfSubmit = async (data: DCFAssumptions) => {
         setIsCalculating(true);
@@ -108,6 +109,12 @@ export default function ProjectDetails({ project }: ProjectDetailsProps) {
                     <IncomeStatementSection
                         data={incomeStatementData}
                         onDataChange={setIncomeStatementData}
+                    />
+                    
+                    {/* Balance Sheet Section */}
+                    <BalanceSheetSection
+                        data={balanceSheetData}
+                        onDataChange={setBalanceSheetData}
                     />
                 </div>
             </div>
