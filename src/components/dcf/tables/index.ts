@@ -1,0 +1,1 @@
+export { IncomeStatementTable } from './IncomeStatementTable';
