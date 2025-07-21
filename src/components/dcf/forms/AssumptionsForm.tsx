@@ -333,31 +333,31 @@ export function AssumptionsForm({
                   onValueChange={field.onChange}
                   disabled={isLoadingParams}
                 >
-                  <SelectTrigger className="bg-background border border-input text-foreground">
+                  <SelectTrigger className="bg-background border border-input text-foreground w-full">
                     <SelectValue placeholder="Select a model" />
                   </SelectTrigger>
-                  <SelectContent className="bg-background border border-border">
+                  <SelectContent className="bg-background border border-border min-w-full">
                     <SelectItem 
                       value="gordon-growth"
-                      className="text-foreground hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
+                      className="text-foreground hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground pr-8"
                     >
                       Gordon Growth Model
                     </SelectItem>
                     <SelectItem 
                       value="h-model"
-                      className="text-foreground hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
+                      className="text-foreground hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground pr-8"
                     >
                       H-Model
                     </SelectItem>
                     <SelectItem 
                       value="revenue-multiple"
-                      className="text-foreground hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
+                      className="text-foreground hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground pr-8"
                     >
                       Revenue Multiple
                     </SelectItem>
                     <SelectItem 
                       value="ebitda-multiple"
-                      className="text-foreground hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
+                      className="text-foreground hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground pr-8"
                     >
                       EBITDA Multiple
                     </SelectItem>
