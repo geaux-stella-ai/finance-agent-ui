@@ -6,9 +6,10 @@ import { Project } from '@/types/project';
 import ProjectDetails from '@/components/projects/ProjectDetails';
 import { getProject } from '@/lib/api/projects';
 import Sidebar from '@/components/playground/Sidebar/Sidebar'
-import { ChatArea } from '@/components/playground/ChatArea'
+import { MainContentArea } from '@/components/playground/MainContentArea'
 import { Suspense } from 'react'
 import { Skeleton } from '@/components/ui/skeleton'
+import { ModelProvider } from '@/contexts/ModelContext'
 
 export default function ProjectWorkspacePage() {
     const params = useParams();
@@ -104,13 +105,15 @@ export default function ProjectWorkspacePage() {
                 </div>
             </div>
         }>
-            <div className="flex h-screen bg-background/80">
-                <Sidebar />
-                <ChatArea />
-                <div className="flex flex-col w-[400px] border-l border-border overflow-y-auto">
-                    <ProjectDetails project={project} />
+            <ModelProvider>
+                <div className="flex h-screen bg-background/80">
+                    <Sidebar />
+                    <MainContentArea />
+                    <div className="flex flex-col w-[400px] border-l border-border overflow-y-auto">
+                        <ProjectDetails project={project} />
+                    </div>
                 </div>
-            </div>
+            </ModelProvider>
         </Suspense>
     )
 } 

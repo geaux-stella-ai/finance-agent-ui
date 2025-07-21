@@ -1,8 +1,11 @@
 import { Project } from '@/types/project';
-import { ChevronDown } from 'lucide-react';
+import { ChevronDown, Calculator } from 'lucide-react';
 import { useState } from 'react';
 import { AssumptionsForm, IncomeStatementSection, BalanceSheetSection } from '@/components/dcf';
 import { DCFAssumptions } from '@/components/dcf/forms/assumptions-schema';
+import { Button } from '@/components/ui/button';
+import { useModel } from '@/contexts/ModelContext';
+import { toast } from 'sonner';
 
 interface ProjectDetailsProps {
     project: Project;
@@ -14,6 +17,19 @@ export default function ProjectDetails({ project }: ProjectDetailsProps) {
     const [dcfResults, setDcfResults] = useState<any>(null);
     const [incomeStatementData, setIncomeStatementData] = useState({});
     const [balanceSheetData, setBalanceSheetData] = useState({});
+    
+    const { 
+        triggerModelBuild, 
+        isModelLoading, 
+        setIsModelLoading, 
+        setModelError,
+        setModelData 
+    } = useModel();
+
+    // Simple validation - check if we have some basic data
+    const hasIncomeData = Object.keys(incomeStatementData).length > 0;
+    const hasBalanceData = Object.keys(balanceSheetData).length > 0;
+    const isModelReady = hasIncomeData || hasBalanceData; // Allow building with partial data
 
     const handleDcfSubmit = async (data: DCFAssumptions) => {
         setIsCalculating(true);
@@ -37,6 +53,35 @@ export default function ProjectDetails({ project }: ProjectDetailsProps) {
             console.error("Error calculating DCF:", error);
         } finally {
             setIsCalculating(false);
+        }
+    };
+
+    const handleBuildModel = async () => {
+        try {
+            setIsModelLoading(true);
+            setModelError(null);
+            
+            // Import the API function here to avoid import issues
+            const { getDcfModel } = await import('@/lib/api/dcf');
+            const { useWorkspaceParams } = await import('@/hooks/useWorkspaceParams');
+            
+            // Get tenant and project IDs from the current URL
+            const tenantId = window.location.pathname.split('/')[2];
+            const projectId = window.location.pathname.split('/')[4];
+            
+            const modelData = await getDcfModel(tenantId, projectId);
+            setModelData(modelData);
+            
+            // Switch to model results tab
+            triggerModelBuild();
+            
+            toast.success('Model built successfully!');
+        } catch (error) {
+            console.error('Error building model:', error);
+            setModelError('Failed to build model');
+            toast.error('Failed to build model');
+        } finally {
+            setIsModelLoading(false);
         }
     };
 
@@ -116,6 +161,29 @@ export default function ProjectDetails({ project }: ProjectDetailsProps) {
                         data={balanceSheetData}
                         onDataChange={setBalanceSheetData}
                     />
+                    
+                    {/* Build Model Button */}
+                    <div className="pt-6">
+                        <Button
+                            onClick={handleBuildModel}
+                            disabled={isModelLoading}
+                            className="w-full flex items-center gap-2 !bg-white !text-black border border-gray-300 hover:!bg-gray-100 [&:focus]:!bg-white [&:focus]:!text-black [&:focus]:!outline-none [&:focus]:!ring-2 [&:focus]:!ring-blue-500"
+                            size="lg"
+                            title={!isModelReady ? "Add some financial data first" : ""}
+                        >
+                            {isModelLoading ? (
+                                <>
+                                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                                    Building Model...
+                                </>
+                            ) : (
+                                <>
+                                    <Calculator className="h-4 w-4" />
+                                    Build Model
+                                </>
+                            )}
+                        </Button>
+                    </div>
                 </div>
             </div>
         </div>
