@@ -28,6 +28,43 @@ export const dcfAssumptionsSchema = z.object({
     .min(0, "Discount rate must be positive")
     .max(50, "Discount rate seems unreasonably high")
     .optional(),
+
+  // Terminal Value Model Selection
+  terminalValueModel: z
+    .enum(["gordon-growth", "h-model", "revenue-multiple", "ebitda-multiple"])
+    .optional(),
+
+  // Gordon Growth Model
+  terminalGrowthRate: z
+    .number()
+    .optional(),
+
+  // H-Model
+  terminalGrowthRateH: z
+    .number()
+    .optional(),
+
+  halfLifePeriod: z
+    .number()
+    .optional(),
+
+  // Revenue Multiple
+  revenueMultiple: z
+    .number()
+    .optional(),
+
+  revenueMarketComparables: z
+    .string()
+    .optional(),
+
+  // EBITDA Multiple
+  ebitdaMultiple: z
+    .number()
+    .optional(),
+
+  ebitdaMarketComparables: z
+    .string()
+    .optional(),
 });
 
 export type DCFAssumptions = z.infer<typeof dcfAssumptionsSchema>;
@@ -37,4 +74,6 @@ export const defaultAssumptions: Partial<DCFAssumptions> = {
   normalizedNetWorkingCapital: 2,
   exitRevenueMultiple: 8,
   discountRate: 10,
+  terminalValueModel: "gordon-growth",
+  terminalGrowthRate: 2.5,
 };

@@ -4,6 +4,7 @@ export interface Parameter {
     project_id: string;
     parameter_key: string;
     parameter_value: number | null;
+    parameter_text: string | null;
     data_type: 'decimal' | 'percentage' | 'text' | 'integer';
     created_at: string;
     updated_at: string;
@@ -11,6 +12,7 @@ export interface Parameter {
 
 export interface ParameterUpdate {
     parameter_value?: number;
+    parameter_text?: string;
     data_type?: 'decimal' | 'percentage' | 'text' | 'integer';
 }
 
@@ -20,6 +22,14 @@ export const PARAMETER_KEY_MAP = {
     normalizedNetWorkingCapital: 'normalized_net_working_capital',
     exitRevenueMultiple: 'exit_revenue_multiple',
     discountRate: 'discount_rate',
+    terminalValueModel: 'terminal_value_model',
+    terminalGrowthRate: 'terminal_growth_rate',
+    terminalGrowthRateH: 'terminal_growth_rate_h',
+    halfLifePeriod: 'half_life_period',
+    revenueMultiple: 'revenue_multiple',
+    revenueMarketComparables: 'revenue_market_comparables',
+    ebitdaMultiple: 'ebitda_multiple',
+    ebitdaMarketComparables: 'ebitda_market_comparables',
 } as const;
 
 export const parameterAPI = {
@@ -58,7 +68,7 @@ export const parameterAPI = {
     async saveParameters(
         tenantId: string,
         projectId: string,
-        parameters: Record<string, { value: number; dataType: 'decimal' | 'percentage' }>
+        parameters: Record<string, { value: number | string; dataType: 'decimal' | 'percentage' | 'text' }>
     ): Promise<Parameter[]> {
         const results: Parameter[] = [];
         
@@ -66,10 +76,18 @@ export const parameterAPI = {
             const backendKey = PARAMETER_KEY_MAP[frontendKey as keyof typeof PARAMETER_KEY_MAP];
             if (backendKey && value !== undefined) {
                 try {
-                    const result = await this.saveParameter(tenantId, projectId, backendKey, {
-                        parameter_value: value,
+                    const updateData: ParameterUpdate = {
                         data_type: dataType,
-                    });
+                    };
+                    
+                    // Use parameter_text for text data types, parameter_value for numeric types
+                    if (dataType === 'text') {
+                        updateData.parameter_text = value as string;
+                    } else {
+                        updateData.parameter_value = value as number;
+                    }
+                    
+                    const result = await this.saveParameter(tenantId, projectId, backendKey, updateData);
                     results.push(result);
                 } catch (error) {
                     console.error(`Failed to save parameter ${backendKey}:`, error);
@@ -82,9 +100,9 @@ export const parameterAPI = {
     },
 
     // Load parameters and convert to frontend format
-    async loadParametersForForm(tenantId: string, projectId: string): Promise<Record<string, number>> {
+    async loadParametersForForm(tenantId: string, projectId: string): Promise<Record<string, number | string>> {
         const parameters = await this.getParameters(tenantId, projectId);
-        const formData: Record<string, number> = {};
+        const formData: Record<string, number | string> = {};
         
         // Convert backend parameter keys to frontend keys
         const reverseMap = Object.fromEntries(
@@ -93,12 +111,19 @@ export const parameterAPI = {
         
         parameters.forEach(param => {
             const frontendKey = reverseMap[param.parameter_key];
-            if (frontendKey && param.parameter_value !== null) {
-                // Convert percentage values from decimal to percentage for display
-                if (param.data_type === 'percentage') {
-                    formData[frontendKey] = param.parameter_value * 100;
-                } else {
-                    formData[frontendKey] = param.parameter_value;
+            if (frontendKey) {
+                // Handle text parameters
+                if (param.data_type === 'text' && param.parameter_text !== null) {
+                    formData[frontendKey] = param.parameter_text;
+                }
+                // Handle numeric parameters
+                else if (param.parameter_value !== null) {
+                    // Convert percentage values from decimal to percentage for display
+                    if (param.data_type === 'percentage') {
+                        formData[frontendKey] = param.parameter_value * 100;
+                    } else {
+                        formData[frontendKey] = param.parameter_value;
+                    }
                 }
             }
         });

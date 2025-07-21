@@ -6,6 +6,9 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
 import { NumberInput } from "./inputs/NumberInput";
 import { PercentageInput } from "./inputs/PercentageInput";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { TextArea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
 import { useWorkspaceParams } from "@/hooks/useWorkspaceParams";
 import { parameterAPI } from "@/lib/api/parameters";
 import { useToast } from "@/components/ui/use-toast";
@@ -104,7 +107,7 @@ export function AssumptionsForm({
 
     try {
       // Convert form data to parameter format
-      const parametersToSave: Record<string, { value: number; dataType: 'decimal' | 'percentage' }> = {};
+      const parametersToSave: Record<string, { value: number | string; dataType: 'decimal' | 'percentage' | 'text' }> = {};
 
       if (formData.normalizedTaxRate !== undefined) {
         parametersToSave.normalizedTaxRate = {
@@ -134,6 +137,63 @@ export function AssumptionsForm({
         };
       }
 
+      // Terminal Value parameters
+      if (formData.terminalValueModel !== undefined) {
+        parametersToSave.terminalValueModel = {
+          value: formData.terminalValueModel,
+          dataType: 'text'
+        };
+      }
+
+      if (formData.terminalGrowthRate !== undefined) {
+        parametersToSave.terminalGrowthRate = {
+          value: formData.terminalGrowthRate / 100, // Convert percentage to decimal
+          dataType: 'percentage'
+        };
+      }
+
+      if (formData.terminalGrowthRateH !== undefined) {
+        parametersToSave.terminalGrowthRateH = {
+          value: formData.terminalGrowthRateH / 100, // Convert percentage to decimal
+          dataType: 'percentage'
+        };
+      }
+
+      if (formData.halfLifePeriod !== undefined) {
+        parametersToSave.halfLifePeriod = {
+          value: formData.halfLifePeriod,
+          dataType: 'decimal'
+        };
+      }
+
+      if (formData.revenueMultiple !== undefined) {
+        parametersToSave.revenueMultiple = {
+          value: formData.revenueMultiple,
+          dataType: 'decimal'
+        };
+      }
+
+      if (formData.revenueMarketComparables !== undefined) {
+        parametersToSave.revenueMarketComparables = {
+          value: formData.revenueMarketComparables,
+          dataType: 'text'
+        };
+      }
+
+      if (formData.ebitdaMultiple !== undefined) {
+        parametersToSave.ebitdaMultiple = {
+          value: formData.ebitdaMultiple,
+          dataType: 'decimal'
+        };
+      }
+
+      if (formData.ebitdaMarketComparables !== undefined) {
+        parametersToSave.ebitdaMarketComparables = {
+          value: formData.ebitdaMarketComparables,
+          dataType: 'text'
+        };
+      }
+
       await parameterAPI.saveParameters(tenantId, projectId, parametersToSave);
 
       // Reset dirty state since we've saved
@@ -143,11 +203,45 @@ export function AssumptionsForm({
         title: "Success",
         description: "Parameters saved successfully",
       });
-    } catch (error) {
+    } catch (error: any) {
       console.error("Failed to save parameters:", error);
+      
+      // Extract detailed error information
+      let errorMessage = "Failed to save parameters";
+      let errorDetails = "";
+      
+      if (error.response?.status === 422) {
+        // Validation error - extract detailed information
+        const responseData = error.response.data;
+        
+        if (responseData?.detail) {
+          if (Array.isArray(responseData.detail)) {
+            // Pydantic validation errors
+            const validationErrors = responseData.detail.map((err: any) => {
+              const field = err.loc ? err.loc.join('.') : 'unknown field';
+              const message = err.msg || 'validation error';
+              const value = err.input !== undefined ? `(value: ${JSON.stringify(err.input)})` : '';
+              return `${field}: ${message} ${value}`;
+            }).join('\n');
+            
+            errorMessage = "Validation Error";
+            errorDetails = validationErrors;
+          } else {
+            // String detail message
+            errorDetails = responseData.detail;
+          }
+        } else if (responseData?.message) {
+          errorDetails = responseData.message;
+        }
+      } else if (error.response?.data?.message) {
+        errorDetails = error.response.data.message;
+      } else if (error.message) {
+        errorDetails = error.message;
+      }
+      
       toast({
-        title: "Error",
-        description: "Failed to save parameters",
+        title: errorMessage,
+        description: errorDetails || "Unknown error occurred",
         variant: "destructive",
       });
     } finally {
@@ -222,6 +316,200 @@ export function AssumptionsForm({
             )}
           />
         </div>
+      </div>
+
+      {/* Terminal Value Section */}
+      <div className="space-y-4">
+        <h3 className="text-lg font-medium">Terminal Value</h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <Controller
+            name="terminalValueModel"
+            control={control}
+            render={({ field }) => (
+              <div className="space-y-2">
+                <Label>Terminal Value Model</Label>
+                <Select 
+                  value={field.value || ""} 
+                  onValueChange={field.onChange}
+                  disabled={isLoadingParams}
+                >
+                  <SelectTrigger className="bg-background border border-input text-foreground">
+                    <SelectValue placeholder="Select a model" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-background border border-border">
+                    <SelectItem 
+                      value="gordon-growth"
+                      className="text-foreground hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
+                    >
+                      Gordon Growth Model
+                    </SelectItem>
+                    <SelectItem 
+                      value="h-model"
+                      className="text-foreground hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
+                    >
+                      H-Model
+                    </SelectItem>
+                    <SelectItem 
+                      value="revenue-multiple"
+                      className="text-foreground hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
+                    >
+                      Revenue Multiple
+                    </SelectItem>
+                    <SelectItem 
+                      value="ebitda-multiple"
+                      className="text-foreground hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
+                    >
+                      EBITDA Multiple
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
+                {getErrorMessage(errors.terminalValueModel) && (
+                  <p className="text-sm text-destructive">{getErrorMessage(errors.terminalValueModel)}</p>
+                )}
+              </div>
+            )}
+          />
+        </div>
+
+        {/* Model-specific fields */}
+        {watch("terminalValueModel") === "gordon-growth" && (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <Controller
+              name="terminalGrowthRate"
+              control={control}
+              render={({ field }) => (
+                <PercentageInput
+                  {...field}
+                  label="Terminal Growth Rate"
+                  error={getErrorMessage(errors.terminalGrowthRate)}
+                  disabled={isLoadingParams}
+                />
+              )}
+            />
+          </div>
+        )}
+
+        {watch("terminalValueModel") === "h-model" && (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <Controller
+              name="terminalGrowthRateH"
+              control={control}
+              render={({ field }) => (
+                <PercentageInput
+                  {...field}
+                  label="Terminal Growth Rate"
+                  error={getErrorMessage(errors.terminalGrowthRateH)}
+                  disabled={isLoadingParams}
+                />
+              )}
+            />
+            <Controller
+              name="halfLifePeriod"
+              control={control}
+              render={({ field }) => (
+                <NumberInput
+                  {...field}
+                  label="Half-life Period"
+                  suffix="years"
+                  error={getErrorMessage(errors.halfLifePeriod)}
+                  disabled={isLoadingParams}
+                />
+              )}
+            />
+          </div>
+        )}
+
+        {watch("terminalValueModel") === "revenue-multiple" && (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <Controller
+              name="revenueMultiple"
+              control={control}
+              render={({ field }) => (
+                <NumberInput
+                  {...field}
+                  label="Revenue Multiple"
+                  suffix="x"
+                  decimalScale={1}
+                  error={getErrorMessage(errors.revenueMultiple)}
+                  disabled={isLoadingParams}
+                />
+              )}
+            />
+            <Controller
+              name="revenueMarketComparables"
+              control={control}
+              render={({ field }) => (
+                <div className="space-y-2">
+                  <Label>Market Comparables</Label>
+                  <TextArea
+                    {...field}
+                    placeholder="Enter comparable companies, one per line"
+                    disabled={isLoadingParams}
+                  />
+                  {getErrorMessage(errors.revenueMarketComparables) && (
+                    <p className="text-sm text-destructive">{getErrorMessage(errors.revenueMarketComparables)}</p>
+                  )}
+                </div>
+              )}
+            />
+          </div>
+        )}
+
+        {watch("terminalValueModel") === "ebitda-multiple" && (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <Controller
+              name="ebitdaMultiple"
+              control={control}
+              render={({ field }) => (
+                <NumberInput
+                  {...field}
+                  label="EBITDA Multiple"
+                  suffix="x"
+                  decimalScale={1}
+                  error={getErrorMessage(errors.ebitdaMultiple)}
+                  disabled={isLoadingParams}
+                />
+              )}
+            />
+            <Controller
+              name="ebitdaMarketComparables"
+              control={control}
+              render={({ field }) => (
+                <div className="space-y-2">
+                  <Label>Market Comparables</Label>
+                  <TextArea
+                    {...field}
+                    placeholder="Enter comparable companies, one per line"
+                    disabled={isLoadingParams}
+                  />
+                  {getErrorMessage(errors.ebitdaMarketComparables) && (
+                    <p className="text-sm text-destructive">{getErrorMessage(errors.ebitdaMarketComparables)}</p>
+                  )}
+                </div>
+              )}
+            />
+          </div>
+        )}
+      </div>
+
+      {/* Save Button */}
+      <div className="flex justify-end space-x-2 pt-4">
+        <Button
+          type="button"
+          variant="outline"
+          onClick={saveParameters}
+          disabled={isSaving || isLoadingParams}
+          className="flex items-center gap-2"
+        >
+          {isSaving ? (
+            <>
+              <div className="w-4 h-4 border-2 border-muted-foreground border-t-transparent rounded-full animate-spin" />
+              Saving...
+            </>
+          ) : (
+            "Save Parameters"
+          )}
+        </Button>
       </div>
     </form>
   );
