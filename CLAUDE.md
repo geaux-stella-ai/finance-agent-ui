@@ -1,2 +1,2 @@
 ## Git Commit Guidelines
-- Do not include "Claude" or "Anthropic" in the git commit message
+- Do not include footer with Claude Code reference when committing code

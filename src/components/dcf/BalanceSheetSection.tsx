@@ -9,6 +9,10 @@ import { useParams } from "next/navigation";
 import { balanceSheetAPI, FrontendBalanceSheetData } from "@/lib/api/balance-sheet";
 import { toast } from "sonner";
 
+interface LineItemCodification {
+  [lineItem: string]: string;
+}
+
 interface BalanceSheetSectionProps {
   data?: FrontendBalanceSheetData;
   onDataChange?: (data: FrontendBalanceSheetData) => void;
@@ -22,6 +26,7 @@ export function BalanceSheetSection({
   const [modalOpen, setModalOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [codifications, setCodifications] = useState<LineItemCodification>({});
   const params = useParams();
   
   const tenantId = params.tenantId as string;
@@ -99,8 +104,8 @@ export function BalanceSheetSection({
             
             <div className="space-y-2 text-sm text-muted-foreground">
               <div className="flex justify-between">
-                <span>Metrics:</span>
-                <span>5 (DCF Standard)</span>
+                <span>Line Items:</span>
+                <span>47 (Comprehensive)</span>
               </div>
               <div className="flex justify-between">
                 <span>Periods:</span>
@@ -144,6 +149,8 @@ export function BalanceSheetSection({
                   <BalanceSheetTable
                     data={data}
                     onDataChange={onDataChange}
+                    codifications={codifications}
+                    onCodificationChange={setCodifications}
                     isEditable={true}
                     onSave={handleSave}
                     isSaving={isSaving}
@@ -157,12 +164,12 @@ export function BalanceSheetSection({
           {filledCells > 0 && (
             <div className="text-xs text-muted-foreground">
               <div className="font-medium mb-1">Recent entries:</div>
-              {Object.entries(data).slice(0, 2).map(([metric, values]) => {
+              {Object.entries(data).slice(0, 2).map(([lineItem, values]) => {
                 const latestEntry = Object.entries(values).find(([, value]) => value !== null);
                 if (latestEntry) {
                   return (
-                    <div key={metric} className="flex justify-between">
-                      <span>{metric}:</span>
+                    <div key={lineItem} className="flex justify-between">
+                      <span>{lineItem}:</span>
                       <span>{latestEntry[1]?.toLocaleString()}</span>
                     </div>
                   );
@@ -171,7 +178,7 @@ export function BalanceSheetSection({
               })}
               {Object.keys(data).length > 2 && (
                 <div className="text-xs text-muted-foreground/70 mt-1">
-                  ...and {Object.keys(data).length - 2} more metrics
+                  ...and {Object.keys(data).length - 2} more line items
                 </div>
               )}
             </div>

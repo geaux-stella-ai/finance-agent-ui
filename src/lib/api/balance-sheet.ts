@@ -2,7 +2,7 @@ import apiClient from '@/lib/api-client';
 
 export interface BalanceSheetEntry {
     project_id: string;
-    metric_name: string;
+    line_item_name: string;
     date_period: string;
     value: number | null;
     created_at: string;
@@ -15,7 +15,7 @@ export interface BalanceSheetData {
 }
 
 export interface BalanceSheetEntryBase {
-    metric_name: string;
+    line_item_name: string;
     date_period: string;
     value: number | null;
 }
@@ -26,7 +26,7 @@ export interface BalanceSheetUpsertRequest {
 
 // Frontend data format used by components
 export interface FrontendBalanceSheetData {
-    [metric: string]: {
+    [lineItem: string]: {
         [date: string]: number | null;
     };
 }
@@ -57,10 +57,10 @@ export const balanceSheetAPI = {
     transformToBackend(frontendData: FrontendBalanceSheetData): BalanceSheetEntryBase[] {
         const entries: BalanceSheetEntryBase[] = [];
         
-        for (const [metricName, dateValues] of Object.entries(frontendData)) {
+        for (const [lineItemName, dateValues] of Object.entries(frontendData)) {
             for (const [dateString, value] of Object.entries(dateValues)) {
                 entries.push({
-                    metric_name: metricName,
+                    line_item_name: lineItemName,
                     date_period: dateString,
                     value: value
                 });
@@ -75,10 +75,10 @@ export const balanceSheetAPI = {
         const frontendData: FrontendBalanceSheetData = {};
         
         for (const entry of backendData.data) {
-            if (!frontendData[entry.metric_name]) {
-                frontendData[entry.metric_name] = {};
+            if (!frontendData[entry.line_item_name]) {
+                frontendData[entry.line_item_name] = {};
             }
-            frontendData[entry.metric_name][entry.date_period] = entry.value;
+            frontendData[entry.line_item_name][entry.date_period] = entry.value;
         }
         
         return frontendData;

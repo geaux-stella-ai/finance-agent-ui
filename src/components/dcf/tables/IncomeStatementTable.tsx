@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Plus, X, Edit, Save, Loader2 } from "lucide-react";
 
 interface IncomeStatementData {
-  [metric: string]: {
+  [lineItem: string]: {
     [date: string]: number | null;
   };
 }
@@ -19,12 +19,68 @@ interface IncomeStatementTableProps {
   isSaving?: boolean;
 }
 
-const PREDEFINED_METRICS = [
+const PREDEFINED_LINE_ITEMS = [
+  // Revenue
+  "Revenue Source 1",
+  "Revenue Source 2",
+  "Revenue Source 3",
   "Total Revenue",
+  "Revenue Growth %",
+
+  // Cost of Sales & Gross Profit
   "Cost of Sales",
+  "Cost of Sales %",
+  "Gross Profit",
+  "Gross Profit %",
+
+  // Operating Expenses
+  "General and Administrative Expenses",
+  "General and Administrative Expenses %",
+  "Research and Development Expenses",
+  "Research and Development Expenses %",
+  "Sales and Marketing Expenses",
+  "Sales and Marketing Expenses %",
   "Total Operating Expenses",
+  "Total Operating Expenses %",
+
+  // EBITDA & Operating Leases
+  "EBITDA",
+  "EBITDA %",
+  "Operating Lease Expenses",
+  "Operating Lease Expenses %",
+  "EBITDAR",
+  "EBITDAR %",
+
+  // Depreciation & Amortization
+  "Depreciation Expenses on PP&E Excl Operating ROU Assets",
+  "Depreciation Expenses on PP&E Excl Operating ROU Assets %",
+  "Depreciation Expenses on Operating ROU Assets",
   "Tax Depreciation Expenses",
-  "Less: Capital Expenditures"
+  "Tax Depreciation Expenses %",
+  "Amortization Expenses",
+  "Amortization Expenses %",
+
+  // Profitability Metrics
+  "EBITA",
+  "EBITA %",
+  "EBIT",
+  "EBIT %",
+
+  // Taxes
+  "Income Taxes",
+  "Income Tax Rate %",
+  "Net Operating Profit After Tax",
+
+  // Capital Expenditures
+  "Capital Expenditures on PP&E Excl Operating ROU asset",
+  "Capital Expenditures on Operating ROU asset",
+  "Capital Expenditures",
+  "Capital Expenditures %",
+
+  // Additional Operating Lease Items
+  "Operating Lease Expenses",
+  "Interest on Operating Leases",
+  "Depreciation Expenses on Operating ROU Assets"
 ];
 
 const DEFAULT_COLUMNS = [
@@ -49,9 +105,9 @@ export function IncomeStatementTable({
   const [editColumnValue, setEditColumnValue] = useState("");
 
   // Initialize data structure if empty
-  const tableData = PREDEFINED_METRICS.reduce((acc, metric) => {
-    acc[metric] = columns.reduce((colAcc, col) => {
-      colAcc[col] = data[metric]?.[col] ?? null;
+  const tableData = PREDEFINED_LINE_ITEMS.reduce((acc, lineItem) => {
+    acc[lineItem] = columns.reduce((colAcc, col) => {
+      colAcc[col] = data[lineItem]?.[col] ?? null;
       return colAcc;
     }, {} as { [date: string]: number | null });
     return acc;
@@ -64,12 +120,12 @@ export function IncomeStatementTable({
     }
   }, []);
 
-  const handleCellChange = (metric: string, date: string, value: string) => {
+  const handleCellChange = (lineItem: string, date: string, value: string) => {
     const numValue = value === "" ? null : parseFloat(value);
     const updatedData = {
       ...tableData,
-      [metric]: {
-        ...tableData[metric],
+      [lineItem]: {
+        ...tableData[lineItem],
         [date]: numValue
       }
     };
@@ -83,9 +139,9 @@ export function IncomeStatementTable({
 
       // Update data with new column
       const updatedData = { ...tableData };
-      PREDEFINED_METRICS.forEach(metric => {
-        updatedData[metric] = {
-          ...updatedData[metric],
+      PREDEFINED_LINE_ITEMS.forEach(lineItem => {
+        updatedData[lineItem] = {
+          ...updatedData[lineItem],
           [newColumnDate]: null
         };
       });
@@ -104,9 +160,9 @@ export function IncomeStatementTable({
 
     // Update data by removing the column
     const updatedData = { ...tableData };
-    PREDEFINED_METRICS.forEach(metric => {
-      const { [dateToRemove]: _, ...remaining } = updatedData[metric];
-      updatedData[metric] = remaining;
+    PREDEFINED_LINE_ITEMS.forEach(lineItem => {
+      const { [dateToRemove]: _, ...remaining } = updatedData[lineItem];
+      updatedData[lineItem] = remaining;
     });
     onDataChange(updatedData);
   };
@@ -123,9 +179,9 @@ export function IncomeStatementTable({
 
       // Update data by renaming the column
       const updatedData = { ...tableData };
-      PREDEFINED_METRICS.forEach(metric => {
-        const { [editingColumn]: oldValue, ...remaining } = updatedData[metric];
-        updatedData[metric] = {
+      PREDEFINED_LINE_ITEMS.forEach(lineItem => {
+        const { [editingColumn]: oldValue, ...remaining } = updatedData[lineItem];
+        updatedData[lineItem] = {
           ...remaining,
           [editColumnValue]: oldValue
         };
@@ -272,25 +328,25 @@ export function IncomeStatementTable({
             </tr>
           </thead>
           <tbody>
-            {PREDEFINED_METRICS.map((metric, index) => (
-              <tr key={metric} className={index % 2 === 0 ? "bg-background" : "bg-muted/25"}>
+            {PREDEFINED_LINE_ITEMS.map((lineItem, index) => (
+              <tr key={lineItem} className={index % 2 === 0 ? "bg-background" : "bg-muted/25"}>
                 <td className="p-3 font-medium text-sm border-r">
-                  {metric}
+                  {lineItem}
                 </td>
                 {columns.map((date) => (
-                  <td key={`${metric}-${date}`} className="p-2 text-center">
+                  <td key={`${lineItem}-${date}`} className="p-2 text-center">
                     {isEditable ? (
                       <Input
                         type="text"
                         inputMode="numeric"
-                        value={tableData[metric]?.[date] ?? ""}
-                        onChange={(e) => handleCellChange(metric, date, e.target.value)}
+                        value={tableData[lineItem]?.[date] ?? ""}
+                        onChange={(e) => handleCellChange(lineItem, date, e.target.value)}
                         className="text-center border-0 bg-transparent focus:bg-background [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                         placeholder="0"
                       />
                     ) : (
                       <span className="text-sm">
-                        {tableData[metric]?.[date]?.toLocaleString() ?? "-"}
+                        {tableData[lineItem]?.[date]?.toLocaleString() ?? "-"}
                       </span>
                     )}
                   </td>
