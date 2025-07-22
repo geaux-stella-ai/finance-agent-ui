@@ -78,9 +78,7 @@ const PREDEFINED_LINE_ITEMS = [
   "Capital Expenditures %",
 
   // Additional Operating Lease Items
-  "Operating Lease Expenses",
-  "Interest on Operating Leases",
-  "Depreciation Expenses on Operating ROU Assets"
+  "Interest on Operating Leases"
 ];
 
 const DEFAULT_COLUMNS = [

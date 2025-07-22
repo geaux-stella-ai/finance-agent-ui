@@ -18,6 +18,24 @@ export interface DCFModel {
 }
 
 export async function getDcfModel(tenantId: string, projectId: string): Promise<DCFModel> {
-    const response = await apiClient.get(`/api/v1/tenants/${tenantId}/projects/${projectId}/dcf-model-results`);
-    return response.data;
+    try {
+        const response = await apiClient.get(`/api/v1/tenants/${tenantId}/projects/${projectId}/dcf-model-results`);
+        return response.data;
+    } catch (error: any) {
+        // Extract specific error message from API response
+        if (error.response?.data?.detail) {
+            const errorMessage = error.response.data.detail;
+            const errorStatus = error.response.status;
+            
+            // Create a more detailed error object
+            const enhancedError = new Error(errorMessage);
+            (enhancedError as any).status = errorStatus;
+            (enhancedError as any).originalError = error;
+            
+            throw enhancedError;
+        }
+        
+        // Fallback to original error
+        throw error;
+    }
 }
