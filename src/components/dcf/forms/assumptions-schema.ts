@@ -29,6 +29,18 @@ export const dcfAssumptionsSchema = z.object({
     .max(50, "Discount rate seems unreasonably high")
     .optional(),
 
+  // Valuation Date
+  valuationDate: z
+    .string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/, "Date must be in YYYY-MM-DD format")
+    .refine((date) => {
+      const parsed = new Date(date);
+      const minDate = new Date('1900-01-01');
+      const maxDate = new Date('2100-12-31');
+      return parsed >= minDate && parsed <= maxDate;
+    }, "Date must be between 1900 and 2100")
+    .optional(),
+
   // Terminal Value Model Selection
   terminalValueModel: z
     .enum(["gordon-growth", "h-model", "revenue-multiple", "ebitda-multiple"])
@@ -76,4 +88,5 @@ export const defaultAssumptions: Partial<DCFAssumptions> = {
   discountRate: 10,
   terminalValueModel: "gordon-growth",
   terminalGrowthRate: 2.5,
+  valuationDate: new Date().toISOString().split('T')[0], // Today's date in YYYY-MM-DD format
 };

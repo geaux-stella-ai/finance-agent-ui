@@ -6,7 +6,11 @@ interface DCFResultsTableProps {
   modelData: DCFModel
 }
 
-const formatValue = (value: number, formatType: string) => {
+const formatValue = (value: number | null, formatType: string) => {
+  if (value === null || value === undefined) {
+    return '-'
+  }
+  
   switch (formatType) {
     case 'CURRENCY':
       return new Intl.NumberFormat('en-US', {

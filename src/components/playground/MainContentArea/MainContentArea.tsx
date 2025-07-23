@@ -22,8 +22,8 @@ const MainContentArea = () => {
             className={cn(
               "rounded-md px-3 py-1.5 text-sm font-medium transition-colors",
               "focus:outline-none focus:!bg-white focus:!text-black focus:ring-2 focus:ring-blue-500",
-              activeTab === 'chat' 
-                ? 'bg-white text-black hover:bg-gray-100 border border-gray-300' 
+              activeTab === 'chat'
+                ? 'bg-white text-black hover:bg-gray-100 border border-gray-300'
                 : 'bg-background text-foreground border border-input hover:bg-accent hover:text-accent-foreground'
             )}
           >
@@ -34,20 +34,20 @@ const MainContentArea = () => {
             className={cn(
               "rounded-md px-3 py-1.5 text-sm font-medium transition-colors",
               "focus:outline-none focus:!bg-white focus:!text-black focus:ring-2 focus:ring-blue-500",
-              activeTab === 'model' 
-                ? 'bg-white text-black hover:bg-gray-100 border border-gray-300' 
+              activeTab === 'model'
+                ? 'bg-white text-black hover:bg-gray-100 border border-gray-300'
                 : 'bg-background text-foreground border border-input hover:bg-accent hover:text-accent-foreground'
             )}
           >
-            Model Results
+            Model
           </button>
           <button
             onClick={() => handleTabChange('reports')}
             className={cn(
               "rounded-md px-3 py-1.5 text-sm font-medium transition-colors",
               "focus:outline-none focus:!bg-white focus:!text-black focus:ring-2 focus:ring-blue-500",
-              activeTab === 'reports' 
-                ? 'bg-white text-black hover:bg-gray-100 border border-gray-300' 
+              activeTab === 'reports'
+                ? 'bg-white text-black hover:bg-gray-100 border border-gray-300'
                 : 'bg-background text-foreground border border-input hover:bg-accent hover:text-accent-foreground'
             )}
           >

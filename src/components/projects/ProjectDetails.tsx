@@ -57,6 +57,9 @@ export default function ProjectDetails({ project }: ProjectDetailsProps) {
     };
 
     const handleBuildModel = async () => {
+        // Switch to model results tab immediately
+        triggerModelBuild();
+        
         try {
             setIsModelLoading(true);
             setModelError(null);
@@ -72,13 +75,21 @@ export default function ProjectDetails({ project }: ProjectDetailsProps) {
             const modelData = await getDcfModel(tenantId, projectId);
             setModelData(modelData);
             
-            // Switch to model results tab
-            triggerModelBuild();
-            
             toast.success('Model built successfully!');
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error building model:', error);
-            setModelError('Failed to build model');
+            
+            // Extract detailed error message from API response
+            let errorMessage = 'Failed to build model';
+            if (error.response?.data?.detail) {
+                errorMessage = error.response.data.detail;
+            } else if (error.response?.data?.message) {
+                errorMessage = error.response.data.message;
+            } else if (error.message) {
+                errorMessage = error.message;
+            }
+            
+            setModelError(errorMessage);
             toast.error('Failed to build model');
         } finally {
             setIsModelLoading(false);

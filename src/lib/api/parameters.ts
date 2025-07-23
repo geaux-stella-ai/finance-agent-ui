@@ -5,7 +5,7 @@ export interface Parameter {
     parameter_key: string;
     parameter_value: number | null;
     parameter_text: string | null;
-    data_type: 'decimal' | 'percentage' | 'text' | 'integer';
+    data_type: 'decimal' | 'percentage' | 'text' | 'integer' | 'date';
     created_at: string;
     updated_at: string;
 }
@@ -13,7 +13,7 @@ export interface Parameter {
 export interface ParameterUpdate {
     parameter_value?: number;
     parameter_text?: string;
-    data_type?: 'decimal' | 'percentage' | 'text' | 'integer';
+    data_type?: 'decimal' | 'percentage' | 'text' | 'integer' | 'date';
 }
 
 // Parameter key mappings between frontend and backend
@@ -30,6 +30,7 @@ export const PARAMETER_KEY_MAP = {
     revenueMarketComparables: 'revenue_market_comparables',
     ebitdaMultiple: 'ebitda_multiple',
     ebitdaMarketComparables: 'ebitda_market_comparables',
+    valuationDate: 'valuation_date',
 } as const;
 
 export const parameterAPI = {
@@ -68,7 +69,7 @@ export const parameterAPI = {
     async saveParameters(
         tenantId: string,
         projectId: string,
-        parameters: Record<string, { value: number | string; dataType: 'decimal' | 'percentage' | 'text' }>
+        parameters: Record<string, { value: number | string; dataType: 'decimal' | 'percentage' | 'text' | 'date' }>
     ): Promise<Parameter[]> {
         const results: Parameter[] = [];
         
@@ -80,8 +81,8 @@ export const parameterAPI = {
                         data_type: dataType,
                     };
                     
-                    // Use parameter_text for text data types, parameter_value for numeric types
-                    if (dataType === 'text') {
+                    // Use parameter_text for text and date data types, parameter_value for numeric types
+                    if (dataType === 'text' || dataType === 'date') {
                         updateData.parameter_text = value as string;
                     } else {
                         updateData.parameter_value = value as number;
@@ -112,8 +113,8 @@ export const parameterAPI = {
         parameters.forEach(param => {
             const frontendKey = reverseMap[param.parameter_key];
             if (frontendKey) {
-                // Handle text parameters
-                if (param.data_type === 'text' && param.parameter_text !== null) {
+                // Handle text and date parameters
+                if ((param.data_type === 'text' || param.data_type === 'date') && param.parameter_text !== null) {
                     formData[frontendKey] = param.parameter_text;
                 }
                 // Handle numeric parameters

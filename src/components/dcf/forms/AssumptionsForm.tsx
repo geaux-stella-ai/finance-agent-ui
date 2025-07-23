@@ -9,6 +9,8 @@ import { PercentageInput } from "./inputs/PercentageInput";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { TextArea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { cn } from "@/lib/utils";
 import { useWorkspaceParams } from "@/hooks/useWorkspaceParams";
 import { parameterAPI } from "@/lib/api/parameters";
 import { useToast } from "@/components/ui/use-toast";
@@ -107,7 +109,7 @@ export function AssumptionsForm({
 
     try {
       // Convert form data to parameter format
-      const parametersToSave: Record<string, { value: number | string; dataType: 'decimal' | 'percentage' | 'text' }> = {};
+      const parametersToSave: Record<string, { value: number | string; dataType: 'decimal' | 'percentage' | 'text' | 'date' }> = {};
 
       if (formData.normalizedTaxRate !== undefined) {
         parametersToSave.normalizedTaxRate = {
@@ -191,6 +193,13 @@ export function AssumptionsForm({
         parametersToSave.ebitdaMarketComparables = {
           value: formData.ebitdaMarketComparables,
           dataType: 'text'
+        };
+      }
+
+      if (formData.valuationDate !== undefined) {
+        parametersToSave.valuationDate = {
+          value: formData.valuationDate,
+          dataType: 'date'
         };
       }
 
@@ -313,6 +322,28 @@ export function AssumptionsForm({
                 error={getErrorMessage(errors.discountRate)}
                 disabled={isLoadingParams}
               />
+            )}
+          />
+          <Controller
+            name="valuationDate"
+            control={control}
+            render={({ field }) => (
+              <div className="space-y-2">
+                <Label htmlFor="valuationDate">Valuation Date</Label>
+                <Input
+                  {...field}
+                  type="date"
+                  id="valuationDate"
+                  disabled={isLoadingParams}
+                  className={cn(
+                    "bg-background [color-scheme:dark]",
+                    getErrorMessage(errors.valuationDate) ? "border-red-500" : ""
+                  )}
+                />
+                {getErrorMessage(errors.valuationDate) && (
+                  <p className="text-sm text-destructive">{getErrorMessage(errors.valuationDate)}</p>
+                )}
+              </div>
             )}
           />
         </div>
