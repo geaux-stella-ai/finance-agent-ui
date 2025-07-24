@@ -11,25 +11,36 @@ const formatValue = (value: number | null, formatType: string) => {
     return '-'
   }
   
-  switch (formatType) {
+  const normalizedFormatType = formatType.toUpperCase()
+  
+  switch (normalizedFormatType) {
     case 'CURRENCY':
+      // Round currency values and use comma separators (no dollar sign)
       return new Intl.NumberFormat('en-US', {
-        style: 'currency',
-        currency: 'USD',
         minimumFractionDigits: 0,
         maximumFractionDigits: 0,
-      }).format(value)
+      }).format(Math.round(value))
     case 'PERCENTAGE':
+      // Keep 1 decimal place for percentages (e.g., 2.8%)
       return new Intl.NumberFormat('en-US', {
         style: 'percent',
         minimumFractionDigits: 1,
         maximumFractionDigits: 1,
       }).format(value)
     case 'NUMBER':
-      return new Intl.NumberFormat('en-US', {
-        minimumFractionDigits: 4,
-        maximumFractionDigits: 4,
-      }).format(value)
+      // For numbers < 1, show 4 decimal places; otherwise use appropriate precision
+      if (Math.abs(value) < 1) {
+        return new Intl.NumberFormat('en-US', {
+          minimumFractionDigits: 4,
+          maximumFractionDigits: 4,
+        }).format(value)
+      } else {
+        // For numbers >= 1, use comma separators with minimal decimal places
+        return new Intl.NumberFormat('en-US', {
+          minimumFractionDigits: 0,
+          maximumFractionDigits: 2,
+        }).format(value)
+      }
     default:
       return value.toString()
   }

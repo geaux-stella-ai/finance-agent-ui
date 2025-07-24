@@ -8,7 +8,7 @@ export interface DCFPeriod {
 export interface DCFLineItem {
     name: string;
     values: number[];
-    format_type: 'CURRENCY' | 'PERCENTAGE' | 'NUMBER';
+    format_type: 'currency' | 'percentage' | 'number';
 }
 
 export interface DCFModel {
