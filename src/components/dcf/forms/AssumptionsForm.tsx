@@ -214,15 +214,15 @@ export function AssumptionsForm({
       });
     } catch (error: any) {
       console.error("Failed to save parameters:", error);
-      
+
       // Extract detailed error information
       let errorMessage = "Failed to save parameters";
       let errorDetails = "";
-      
+
       if (error.response?.status === 422) {
         // Validation error - extract detailed information
         const responseData = error.response.data;
-        
+
         if (responseData?.detail) {
           if (Array.isArray(responseData.detail)) {
             // Pydantic validation errors
@@ -232,7 +232,7 @@ export function AssumptionsForm({
               const value = err.input !== undefined ? `(value: ${JSON.stringify(err.input)})` : '';
               return `${field}: ${message} ${value}`;
             }).join('\n');
-            
+
             errorMessage = "Validation Error";
             errorDetails = validationErrors;
           } else {
@@ -247,7 +247,7 @@ export function AssumptionsForm({
       } else if (error.message) {
         errorDetails = error.message;
       }
-      
+
       toast({
         title: errorMessage,
         description: errorDetails || "Unknown error occurred",
@@ -359,8 +359,8 @@ export function AssumptionsForm({
             render={({ field }) => (
               <div className="space-y-2">
                 <Label>Terminal Value Model</Label>
-                <Select 
-                  value={field.value || ""} 
+                <Select
+                  value={field.value || ""}
                   onValueChange={field.onChange}
                   disabled={isLoadingParams}
                 >
@@ -368,25 +368,25 @@ export function AssumptionsForm({
                     <SelectValue placeholder="Select a model" />
                   </SelectTrigger>
                   <SelectContent className="bg-background border border-border min-w-full">
-                    <SelectItem 
+                    <SelectItem
                       value="gordon-growth"
                       className="text-foreground hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground pr-8"
                     >
                       Gordon Growth Model
                     </SelectItem>
-                    <SelectItem 
+                    <SelectItem
                       value="h-model"
                       className="text-foreground hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground pr-8"
                     >
                       H-Model
                     </SelectItem>
-                    <SelectItem 
-                      value="revenue-multiple"
+                    <SelectItem
+                      value="exit-revenue-multiple"
                       className="text-foreground hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground pr-8"
                     >
                       Revenue Multiple
                     </SelectItem>
-                    <SelectItem 
+                    <SelectItem
                       value="ebitda-multiple"
                       className="text-foreground hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground pr-8"
                     >
@@ -450,7 +450,7 @@ export function AssumptionsForm({
           </div>
         )}
 
-        {watch("terminalValueModel") === "revenue-multiple" && (
+        {watch("terminalValueModel") === "exit-revenue-multiple" && (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <Controller
               name="revenueMultiple"

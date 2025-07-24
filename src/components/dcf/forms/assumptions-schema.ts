@@ -43,7 +43,7 @@ export const dcfAssumptionsSchema = z.object({
 
   // Terminal Value Model Selection
   terminalValueModel: z
-    .enum(["gordon-growth", "h-model", "revenue-multiple", "ebitda-multiple"])
+    .enum(["gordon-growth", "h-model", "exit-revenue-multiple", "ebitda-multiple"])
     .optional(),
 
   // Gordon Growth Model
